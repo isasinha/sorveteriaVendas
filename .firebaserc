@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "default": "sorveteria-perseveranca",
+    "gerencia": "sorveteria-perseveranca"
+  },
+  "targets": {
+    "sorveteria-perseveranca": {
+      "hosting": {
+        "vendas": [
+          "sorveteria-perseveranca-vendas"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
