@@ -6,7 +6,7 @@
         <span class="toolbar-title">Sorveteria Vendas</span>
       </div>
       <div class="toolbar-right">
-        <span class="user-name">Olá, {{ userName }}!</span>
+        <span class="user-name">Olá, {{ userName }}! · {{ perfilNome }}</span>
         <button mat-icon-button (click)="onLogout()" title="Sair">
           <mat-icon>logout</mat-icon>
         </button>
@@ -21,7 +21,7 @@
     </div>
 
     <div class="cards-grid">
-      @for (item of menuItems; track item.route) {
+      @for (item of itensFiltrados; track item.route) {
         <mat-card 
           class="menu-card"
           [style.border-left-color]="item.color"

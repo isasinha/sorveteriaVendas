@@ -20,9 +20,10 @@
       {{ erroCarregar }}
     </div>
   } @else {
+
+    <!-- ── Atribuição de pessoas ──────────────────────────────── -->
     <div class="content-grid">
 
-      <!-- ── Lista de Pessoas ─────────────────────── -->
       <mat-card class="pessoas-card">
         <div class="card-header">
           <mat-icon>people</mat-icon>
@@ -46,6 +47,11 @@
               <div class="pessoa-info">
                 <span class="pessoa-nome">{{ p.nome }}</span>
                 <div class="pessoa-tags">
+                  @if (p.email) {
+                    <span class="tag tag--email">
+                      <mat-icon>email</mat-icon>{{ p.email }}
+                    </span>
+                  }
                   @if (p.idBarraca) {
                     <span class="tag tag--barraca">
                       <mat-icon>store</mat-icon>{{ nomeDe(barracas, p.idBarraca) }}
@@ -66,7 +72,6 @@
         </ul>
       </mat-card>
 
-      <!-- ── Painel de Atribuição ─────────────────── -->
       <mat-card class="atribuicao-card">
         @if (!selecionada) {
           <div class="selecione-state">
@@ -93,6 +98,13 @@
                 {{ erroSalvar }}
               </div>
             }
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>E-mail de login</mat-label>
+              <mat-icon matPrefix>email</mat-icon>
+              <input matInput type="email" [(ngModel)]="formEmail" placeholder="usuario@email.com">
+              <mat-hint>Deve ser igual ao e-mail cadastrado no login</mat-hint>
+            </mat-form-field>
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Barraca</mat-label>
@@ -133,5 +145,74 @@
       </mat-card>
 
     </div>
+
+    <!-- ── Permissões por perfil ──────────────────────────────── -->
+    <mat-card class="permissoes-card">
+      <div class="card-header">
+        <mat-icon>security</mat-icon>
+        <h2>Permissões por Perfil</h2>
+      </div>
+
+      @if (erroPermissoes) {
+        <div class="erro-msg permissoes-erro">
+          <mat-icon>error_outline</mat-icon>
+          {{ erroPermissoes }}
+        </div>
+      }
+
+      <div class="permissoes-table-wrap">
+        <table class="permissoes-table">
+          <thead>
+            <tr>
+              <th class="col-perfil">Perfil</th>
+              @for (f of funcionalidades; track f.chave) {
+                <th class="col-func">{{ f.label }}</th>
+              }
+              <th class="col-acao"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of perfis; track p.id) {
+              <tr [class.gerencia-row]="isGerencia(p.nome)">
+                <td class="cell-perfil">
+                  <span class="perfil-nome">{{ p.nome }}</span>
+                  @if (isGerencia(p.nome)) {
+                    <mat-icon class="lock-icon" matTooltip="Acesso total — não editável">lock</mat-icon>
+                  }
+                </td>
+                @for (f of funcionalidades; track f.chave) {
+                  <td class="cell-check">
+                    <mat-checkbox
+                      [checked]="isGerencia(p.nome) || temPermissaoPerfil(p.id, f.chave)"
+                      [disabled]="isGerencia(p.nome) || savingPerfilId === p.id"
+                      (change)="togglePermissao(p.id, f.chave)">
+                    </mat-checkbox>
+                  </td>
+                }
+                <td class="cell-acao">
+                  @if (!isGerencia(p.nome)) {
+                    @if (sucessoPerfilId === p.id) {
+                      <mat-icon class="salvo-icon">check_circle</mat-icon>
+                    } @else {
+                      <button mat-stroked-button color="primary"
+                              (click)="salvarPermissoes(p.id)"
+                              [disabled]="savingPerfilId !== null">
+                        @if (savingPerfilId === p.id) {
+                          <mat-spinner diameter="16"></mat-spinner>
+                        } @else {
+                          <mat-icon>save</mat-icon>
+                        }
+                        Salvar
+                      </button>
+                    }
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </mat-card>
+
   }
 </div>

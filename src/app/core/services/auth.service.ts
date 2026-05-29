@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
-import { auth } from '../config/firebase.config';
+import { auth, db } from '../config/firebase.config';
 import { signInWithEmailAndPassword, signOut, User, onAuthStateChanged } from 'firebase/auth';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { getDoc, doc, collection, query, where, getDocs } from 'firebase/firestore';
+import { BehaviorSubject, Observable, filter, firstValueFrom } from 'rxjs';
+import { PerfilCompleto, Funcionalidade, isGerencia, FUNCIONALIDADES } from '../models/perfil.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,30 +12,33 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
 
+  // undefined = aguardando auth state, null = sem perfil, PerfilCompleto = carregado
+  private perfilSubject = new BehaviorSubject<PerfilCompleto | null | undefined>(undefined);
+  public perfil$: Observable<PerfilCompleto | null | undefined> = this.perfilSubject.asObservable();
+
   constructor() {
-    // Monitora mudanças no estado de autenticação
-    onAuthStateChanged(auth, (user) => {
+    onAuthStateChanged(auth, async (user) => {
       this.currentUserSubject.next(user);
+      if (user) {
+        await this.carregarPerfil(user.email ?? '');
+      } else {
+        this.perfilSubject.next(undefined);
+      }
     });
   }
 
-  async login(email: string, password: string): Promise<User> {
+  async login(email: string, password: string): Promise<void> {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      return userCredential.user;
+      await signInWithEmailAndPassword(auth, email, password);
+      // onAuthStateChanged dispara em seguida e chama carregarPerfil automaticamente
     } catch (error: any) {
-      console.error('Erro no login:', error);
       throw this.handleAuthError(error);
     }
   }
 
   async logout(): Promise<void> {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error('Erro no logout:', error);
-      throw error;
-    }
+    await signOut(auth);
+    this.perfilSubject.next(undefined);
   }
 
   isAuthenticated(): boolean {
@@ -44,17 +49,55 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  getPerfil(): PerfilCompleto | null | undefined {
+    return this.perfilSubject.value;
+  }
+
+  temPermissao(funcionalidade: Funcionalidade): boolean {
+    const perfil = this.perfilSubject.value;
+    if (!perfil) return false;
+    if (isGerencia(perfil.nome)) return true;
+    return (perfil.permissoes ?? []).includes(funcionalidade);
+  }
+
+  aguardarPerfil(): Promise<PerfilCompleto | null> {
+    return firstValueFrom(
+      this.perfil$.pipe(filter((p): p is PerfilCompleto | null => p !== undefined))
+    );
+  }
+
+  private async carregarPerfil(email: string): Promise<void> {
+    try {
+      const snap = await getDocs(query(collection(db, 'pessoas'), where('email', '==', email)));
+      if (snap.empty) { this.perfilSubject.next(null); return; }
+
+      const pessoa = snap.docs[0].data();
+      if (!pessoa['idPerfil']) { this.perfilSubject.next(null); return; }
+
+      const perfilSnap = await getDoc(doc(db, 'perfis', pessoa['idPerfil']));
+      if (!perfilSnap.exists()) { this.perfilSubject.next(null); return; }
+
+      const dados = perfilSnap.data();
+      const nome = dados['nome'] as string;
+      const permissoes = isGerencia(nome)
+        ? FUNCIONALIDADES.map(f => f.chave)
+        : (dados['permissoes'] ?? []) as Funcionalidade[];
+
+      this.perfilSubject.next({ id: perfilSnap.id, nome, permissoes });
+    } catch {
+      this.perfilSubject.next(null);
+    }
+  }
+
   private handleAuthError(error: any): Error {
-    const errorMessages: { [key: string]: string } = {
+    const mensagens: Record<string, string> = {
       'auth/invalid-email': 'Email inválido',
       'auth/user-disabled': 'Usuário desabilitado',
       'auth/user-not-found': 'Usuário não encontrado',
       'auth/wrong-password': 'Senha incorreta',
       'auth/invalid-credential': 'Credenciais inválidas',
-      'auth/too-many-requests': 'Muitas tentativas. Tente novamente mais tarde'
+      'auth/too-many-requests': 'Muitas tentativas. Tente novamente mais tarde',
     };
-
-    const message = errorMessages[error.code] || 'Erro ao fazer login';
-    return new Error(message);
+    return new Error(mensagens[error.code] ?? 'Erro ao fazer login');
   }
 }

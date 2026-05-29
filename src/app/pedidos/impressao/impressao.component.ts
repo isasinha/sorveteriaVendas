@@ -26,16 +26,9 @@ export class ImpressaoComponent implements OnInit {
   numero = 0;
   nomeCliente = '';
   itens: ItemPedido[] = [];
+  itensExpandidos: ItemPedido[] = [];
   total = 0;
   qrDataUrl = '';
-
-  get itensExpandidos(): ItemPedido[] {
-    const result: ItemPedido[] = [];
-    for (const item of this.itens) {
-      for (let i = 0; i < item.quantidade; i++) result.push(item);
-    }
-    return result;
-  }
 
   ngOnInit(): void {
     const state = history.state as ImpressaoState;
@@ -47,6 +40,7 @@ export class ImpressaoComponent implements OnInit {
     this.nomeCliente = state.nomeCliente;
     this.itens = state.itens;
     this.total = state.total;
+    this.itensExpandidos = state.itens.flatMap(item => Array(item.quantidade).fill(item));
 
     const qrText = `Pedido #${this.numero}\n${this.nomeCliente}`;
     QRCode.toDataURL(qrText, { width: 180, margin: 1, color: { dark: '#000', light: '#fff' } })

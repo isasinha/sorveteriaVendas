@@ -60,15 +60,18 @@ export class PagamentoComponent {
     this.saving = true;
     this.erro = '';
     try {
-      await this.vendasService.addVenda({
-        valor: this.data.total,
-        tipo: 'pedido',
-        descricao: `Pedido #${this.data.numero} - ${this.data.nomeCliente}`,
-      });
+      const ops: Promise<void>[] = [
+        this.vendasService.addVenda({
+          valor: this.data.total,
+          tipo: 'pedido',
+          descricao: `Pedido #${this.data.numero} - ${this.data.nomeCliente}`,
+        }),
+        this.pedidosService.marcarPago(this.data.pedidoId),
+      ];
       if (this.doacao && this.doacao > 0) {
-        await this.vendasService.addVenda({ valor: this.doacao, tipo: 'doacao' });
+        ops.push(this.vendasService.addVenda({ valor: this.doacao, tipo: 'doacao' }));
       }
-      await this.pedidosService.marcarPago(this.data.pedidoId);
+      await Promise.all(ops);
       this.dialogRef.close(true);
       this.router.navigate(['/pedidos/impressao'], {
         state: {

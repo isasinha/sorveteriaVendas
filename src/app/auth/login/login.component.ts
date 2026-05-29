@@ -1,5 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
@@ -14,7 +13,6 @@ import { AuthService } from '../../core/services/auth.service';
   selector: 'app-login',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -27,11 +25,11 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './login.component.scss'
 })
 export class LoginComponent {
-  email: string = '';
-  password: string = '';
-  loading: boolean = false;
-  errorMessage: string = '';
-  hidePassword: boolean = true;
+  email = '';
+  password = '';
+  loading = false;
+  errorMessage = '';
+  hidePassword = true;
 
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -47,6 +45,14 @@ export class LoginComponent {
 
     try {
       await this.authService.login(this.email, this.password);
+      const perfil = await this.authService.aguardarPerfil();
+
+      if (!perfil) {
+        await this.authService.logout();
+        this.errorMessage = 'Usuário sem perfil atribuído. Contacte o administrador.';
+        return;
+      }
+
       this.router.navigate(['/menu']);
     } catch (error: any) {
       this.errorMessage = error.message || 'Erro ao fazer login';

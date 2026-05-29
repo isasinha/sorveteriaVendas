@@ -7,6 +7,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PedidosService } from '../../core/services/pedidos.service';
 import { Pedido, ItemPedido, StatusPedido, STATUS_ICON, STATUS_LABEL, getStatusPedido } from '../../core/models/pedido.model';
+import { formatDataHora } from '../../core/utils/formatters';
 
 interface ItemExpandido {
   tipoNome: string;
@@ -50,13 +51,7 @@ export class DetalhePedidoComponent {
   readonly statusPedido: StatusPedido = getStatusPedido(this.pedido);
   readonly statusLabel: string = STATUS_LABEL[this.statusPedido];
   readonly statusIcon: string = STATUS_ICON[this.statusPedido];
-
-  formatDataHora(data: Date): string {
-    return data.toLocaleString('pt-BR', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
-  }
+  readonly formatDataHora = formatDataHora;
 
   async concluirEntrega(): Promise<void> {
     if (this.saving || this.pedido.entregue) return;
