@@ -1,0 +1,137 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>
+      <mat-icon>account_circle</mat-icon>
+      Controle de Perfil
+    </h1>
+    <button mat-stroked-button (click)="voltar()">
+      <mat-icon>arrow_back</mat-icon>
+      Voltar
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-global">
+      <mat-spinner diameter="48"></mat-spinner>
+    </div>
+  } @else if (erroCarregar) {
+    <div class="erro-global">
+      <mat-icon>error_outline</mat-icon>
+      {{ erroCarregar }}
+    </div>
+  } @else {
+    <div class="content-grid">
+
+      <!-- ── Lista de Pessoas ─────────────────────── -->
+      <mat-card class="pessoas-card">
+        <div class="card-header">
+          <mat-icon>people</mat-icon>
+          <h2>Pessoas</h2>
+          <span class="badge">{{ pessoas.length }}</span>
+        </div>
+
+        @if (pessoas.length === 0) {
+          <div class="empty-state">
+            <mat-icon>person_off</mat-icon>
+            <span>Nenhuma pessoa cadastrada</span>
+          </div>
+        }
+
+        <ul class="pessoas-list">
+          @for (p of pessoas; track p.id) {
+            <li class="pessoa-row"
+                [class.ativa]="selecionada?.id === p.id"
+                (click)="selecionar(p)">
+              <div class="pessoa-avatar">{{ p.nome.charAt(0).toUpperCase() }}</div>
+              <div class="pessoa-info">
+                <span class="pessoa-nome">{{ p.nome }}</span>
+                <div class="pessoa-tags">
+                  @if (p.idBarraca) {
+                    <span class="tag tag--barraca">
+                      <mat-icon>store</mat-icon>{{ nomeDe(barracas, p.idBarraca) }}
+                    </span>
+                  }
+                  @if (p.idPerfil) {
+                    <span class="tag tag--perfil">
+                      <mat-icon>manage_accounts</mat-icon>{{ nomeDe(perfis, p.idPerfil) }}
+                    </span>
+                  }
+                </div>
+              </div>
+              <mat-icon class="status-icon" [class.atribuido]="temAtribuicao(p)">
+                {{ temAtribuicao(p) ? 'check_circle' : 'radio_button_unchecked' }}
+              </mat-icon>
+            </li>
+          }
+        </ul>
+      </mat-card>
+
+      <!-- ── Painel de Atribuição ─────────────────── -->
+      <mat-card class="atribuicao-card">
+        @if (!selecionada) {
+          <div class="selecione-state">
+            <mat-icon>touch_app</mat-icon>
+            <span>Selecione uma pessoa para atribuir barraca e perfil</span>
+          </div>
+        } @else {
+          <div class="atribuicao-content">
+
+            <div class="pessoa-destaque">
+              <div class="destaque-avatar">{{ selecionada.nome.charAt(0).toUpperCase() }}</div>
+              <h3>{{ selecionada.nome }}</h3>
+            </div>
+
+            @if (sucesso) {
+              <div class="sucesso-msg">
+                <mat-icon>check_circle</mat-icon>
+                Atribuição salva com sucesso!
+              </div>
+            }
+            @if (erroSalvar) {
+              <div class="erro-msg">
+                <mat-icon>error_outline</mat-icon>
+                {{ erroSalvar }}
+              </div>
+            }
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Barraca</mat-label>
+              <mat-icon matPrefix>store</mat-icon>
+              <mat-select [(ngModel)]="formBarraca">
+                <mat-option value="">— Sem barraca —</mat-option>
+                @for (b of barracas; track b.id) {
+                  <mat-option [value]="b.id">{{ b.nome }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Perfil</mat-label>
+              <mat-icon matPrefix>manage_accounts</mat-icon>
+              <mat-select [(ngModel)]="formPerfil">
+                <mat-option value="">— Sem perfil —</mat-option>
+                @for (p of perfis; track p.id) {
+                  <mat-option [value]="p.id">{{ p.nome }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" class="btn-salvar"
+                    (click)="salvar()" [disabled]="saving">
+              <span class="btn-content">
+                @if (saving) {
+                  <mat-spinner diameter="20"></mat-spinner>
+                } @else {
+                  <mat-icon>save</mat-icon>
+                }
+                Salvar Atribuição
+              </span>
+            </button>
+
+          </div>
+        }
+      </mat-card>
+
+    </div>
+  }
+</div>

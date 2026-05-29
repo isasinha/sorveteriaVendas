@@ -1,0 +1,194 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>
+      <mat-icon>inventory_2</mat-icon>
+      Alterar Itens Disponíveis
+    </h1>
+    <button mat-stroked-button (click)="voltar()">
+      <mat-icon>arrow_back</mat-icon>
+      Voltar
+    </button>
+  </div>
+
+  <div class="blocos-linha">
+    @for (config of blocosLinha1; track config.col) {
+      <ng-container *ngTemplateOutlet="blocoCard; context: { config }"></ng-container>
+    }
+  </div>
+
+  <div class="blocos-linha">
+    @for (config of blocosLinha2; track config.col) {
+      <ng-container *ngTemplateOutlet="blocoCard; context: { config }"></ng-container>
+    }
+  </div>
+
+</div>
+
+<ng-template #blocoCard let-config="config">
+  <mat-card class="bloco" [style.grid-column]="config.span ? 'span ' + config.span : null">
+
+    <div class="bloco-header">
+      <div class="bloco-icon {{ config.iconClass }}">
+        <mat-icon>{{ config.icon }}</mat-icon>
+      </div>
+      <div class="bloco-info">
+        <h2>{{ config.titulo }}</h2>
+        <span class="item-count">
+          {{ blocos[config.col].itens.length }}
+          {{ blocos[config.col].itens.length === 1 ? 'item' : 'itens' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="bloco-content">
+      @if (blocos[config.col].erro) {
+        <div class="erro-msg">
+          <mat-icon>error_outline</mat-icon>
+          {{ blocos[config.col].erro }}
+        </div>
+      }
+
+      @if (blocos[config.col].loading) {
+        <div class="loading-state">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      } @else {
+        @if (blocos[config.col].itens.length === 0) {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <span>Nenhum item cadastrado</span>
+          </div>
+        } @else {
+          <table class="item-table">
+            <colgroup>
+              <col class="col-nome">
+              @if (config.temPreco)      { <col class="col-preco"> }
+              @if (config.temQtdSabores) { <col class="col-qtd"> }
+              <col class="col-acoes">
+            </colgroup>
+            <tbody>
+              @for (item of blocos[config.col].itens; track item.id) {
+                <tr class="item-row" [class.editing]="blocos[config.col].editingId === item.id">
+
+                  @if (blocos[config.col].editingId === item.id) {
+                    <td>
+                      <mat-form-field appearance="outline" class="edit-field" subscriptSizing="dynamic">
+                        <input matInput
+                               [(ngModel)]="blocos[config.col].editingNome"
+                               (keyup.enter)="salvarEdicao(config.col)"
+                               (keyup.escape)="cancelarEdicao(config.col)">
+                      </mat-form-field>
+                    </td>
+                    @if (config.temPreco) {
+                      <td>
+                        <mat-form-field appearance="outline" class="edit-preco-field" subscriptSizing="dynamic">
+                          <span matTextPrefix>R$&nbsp;</span>
+                          <input matInput type="number" min="0" step="0.01"
+                                 [(ngModel)]="blocos[config.col].editingPreco"
+                                 (keyup.enter)="salvarEdicao(config.col)"
+                                 (keyup.escape)="cancelarEdicao(config.col)"
+                                 placeholder="0,00">
+                        </mat-form-field>
+                      </td>
+                    }
+                    @if (config.temQtdSabores) {
+                      <td>
+                        <mat-form-field appearance="outline" class="edit-qtd-field" subscriptSizing="dynamic">
+                          <input matInput type="number" min="1" step="1"
+                                 [(ngModel)]="blocos[config.col].editingQtdSabores"
+                                 (keyup.enter)="salvarEdicao(config.col)"
+                                 (keyup.escape)="cancelarEdicao(config.col)"
+                                 placeholder="Qtd">
+                        </mat-form-field>
+                      </td>
+                    }
+                    <td class="cell-acoes">
+                      <button mat-icon-button color="primary" matTooltip="Salvar"
+                              (click)="salvarEdicao(config.col)"
+                              [disabled]="blocos[config.col].saving">
+                        <mat-icon>check</mat-icon>
+                      </button>
+                      <button mat-icon-button matTooltip="Cancelar"
+                              (click)="cancelarEdicao(config.col)">
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </td>
+                  } @else {
+                    <td class="cell-nome">{{ item.nome }}</td>
+                    @if (config.temPreco) {
+                      <td class="cell-preco">{{ item.preco != null ? formatPreco(item.preco) : '—' }}</td>
+                    }
+                    @if (config.temQtdSabores) {
+                      <td class="cell-qtd">{{ item.qtdSabores != null ? item.qtdSabores + ' ' + (item.qtdSabores === 1 ? 'sabor' : 'sabores') : '—' }}</td>
+                    }
+                    <td class="cell-acoes">
+                      <button mat-icon-button matTooltip="Editar"
+                              (click)="iniciarEdicao(config.col, item)"
+                              [disabled]="blocos[config.col].deletingId !== null">
+                        <mat-icon>edit</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" matTooltip="Excluir"
+                              (click)="deletar(config.col, item.id)"
+                              [disabled]="blocos[config.col].deletingId === item.id">
+                        @if (blocos[config.col].deletingId === item.id) {
+                          <mat-spinner diameter="16"></mat-spinner>
+                        } @else {
+                          <mat-icon>delete</mat-icon>
+                        }
+                      </button>
+                    </td>
+                  }
+
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      }
+    </div>
+
+    <div class="bloco-footer">
+      <mat-form-field appearance="outline" class="add-field" subscriptSizing="dynamic">
+        <mat-label>{{ config.labelAdicionar }}</mat-label>
+        <input matInput
+               [(ngModel)]="blocos[config.col].novoNome"
+               (keyup.enter)="adicionar(config.col)"
+               [disabled]="blocos[config.col].saving">
+      </mat-form-field>
+      @if (config.temPreco) {
+        <mat-form-field appearance="outline" class="add-preco-field" subscriptSizing="dynamic">
+          <mat-label>Preço</mat-label>
+          <span matTextPrefix>R$&nbsp;</span>
+          <input matInput type="number" min="0" step="0.01"
+                 [(ngModel)]="blocos[config.col].novoPreco"
+                 (keyup.enter)="adicionar(config.col)"
+                 [disabled]="blocos[config.col].saving"
+                 placeholder="0,00">
+        </mat-form-field>
+      }
+      @if (config.temQtdSabores) {
+        <mat-form-field appearance="outline" class="add-qtd-field" subscriptSizing="dynamic">
+          <mat-label>Qtd. Sabores</mat-label>
+          <input matInput type="number" min="1" step="1"
+                 [(ngModel)]="blocos[config.col].novoQtdSabores"
+                 (keyup.enter)="adicionar(config.col)"
+                 [disabled]="blocos[config.col].saving"
+                 placeholder="Ex: 2">
+        </mat-form-field>
+      }
+      <button mat-flat-button color="primary"
+              (click)="adicionar(config.col)"
+              [disabled]="!blocos[config.col].novoNome.trim() || blocos[config.col].saving">
+        <span class="btn-content">
+          @if (blocos[config.col].saving) {
+            <mat-spinner diameter="18"></mat-spinner>
+          } @else {
+            <mat-icon>add</mat-icon>
+          }
+          Adicionar
+        </span>
+      </button>
+    </div>
+
+  </mat-card>
+</ng-template>

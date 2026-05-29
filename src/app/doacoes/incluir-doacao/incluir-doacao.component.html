@@ -1,0 +1,64 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>
+      <mat-icon>volunteer_activism</mat-icon>
+      Incluir Doação
+    </h1>
+    <button mat-stroked-button (click)="voltar()">
+      <mat-icon>arrow_back</mat-icon>
+      Voltar
+    </button>
+  </div>
+
+  <div class="form-wrapper">
+    <mat-card class="doacao-card">
+
+      <div class="card-icon">
+        <mat-icon>favorite</mat-icon>
+      </div>
+
+      <h2>Registrar Doação</h2>
+      <p class="card-desc">Informe o valor recebido como doação para registrá-lo nas vendas do dia.</p>
+
+      @if (sucesso) {
+        <div class="sucesso-msg">
+          <mat-icon>check_circle</mat-icon>
+          Doação registrada com sucesso!
+        </div>
+      }
+
+      @if (erro) {
+        <div class="erro-msg">
+          <mat-icon>error_outline</mat-icon>
+          {{ erro }}
+        </div>
+      }
+
+      <mat-form-field appearance="outline" class="valor-field">
+        <mat-label>Valor da doação</mat-label>
+        <span matTextPrefix>R$&nbsp;</span>
+        <input matInput
+               type="number"
+               min="0.01"
+               step="0.01"
+               [(ngModel)]="valor"
+               (keyup.enter)="registrar()"
+               placeholder="0,00">
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" class="btn-registrar"
+              (click)="registrar()"
+              [disabled]="!valor || valor <= 0 || saving">
+        <span class="btn-content">
+          @if (saving) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <mat-icon>volunteer_activism</mat-icon>
+          }
+          Registrar Doação
+        </span>
+      </button>
+
+    </mat-card>
+  </div>
+</div>

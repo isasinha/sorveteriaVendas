@@ -1,0 +1,62 @@
+<div class="controles no-print">
+  <button mat-stroked-button (click)="voltar()">
+    <mat-icon>arrow_back</mat-icon>
+    Voltar
+  </button>
+  <button mat-flat-button color="primary" (click)="imprimir()">
+    <mat-icon>print</mat-icon>
+    Imprimir
+  </button>
+</div>
+
+<div class="cupom">
+
+  <!-- ── VIA DO CLIENTE ─────────────────────── -->
+  <div class="via via-cliente">
+    <div class="via-label">VIA DO CLIENTE</div>
+
+    <div class="cliente-pedido-numero">Pedido #{{ numero }}</div>
+    <div class="cliente-nome">{{ nomeCliente }}</div>
+
+    @if (qrDataUrl) {
+      <div class="qr-bloco">
+        <img [src]="qrDataUrl" alt="QR Code" class="qr-img">
+        <span class="qr-dica">Escaneie para salvar os dados do pedido</span>
+      </div>
+    }
+  </div>
+
+  <!-- ── LINHA DE CORTE ─────────────────────── -->
+  <div class="linha-corte">
+    <span class="tesoura">✂</span>
+    <div class="tracejado"></div>
+  </div>
+
+  <!-- ── VIA DA PRODUÇÃO ────────────────────── -->
+  <div class="via via-producao">
+    <div class="via-label">VIA DA PRODUÇÃO</div>
+
+    <div class="prod-cabecalho">
+      <span class="prod-numero">#{{ numero }}</span>
+      <span class="prod-nome">{{ nomeCliente }}</span>
+    </div>
+
+    <ul class="itens-prod">@for (item of itensExpandidos; track $index) {
+        <li class="item-prod">
+          <div class="checkbox"></div>
+          <div class="item-prod-detalhe">
+            <div class="item-prod-tipo">{{ item.tipoNome }}</div>
+            @if (item.saboresNomes.length > 0) {
+              <div class="item-prod-sabores">{{ item.saboresNomes.join(', ') }}</div>
+            }
+            @if (item.adicionaisNomes.length > 0) {
+              <div class="item-prod-adicionais">+ {{ item.adicionaisNomes.join(', ') }}</div>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+
+  </div>
+
+</div>

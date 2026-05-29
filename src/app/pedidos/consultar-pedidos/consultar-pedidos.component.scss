@@ -1,0 +1,222 @@
+@use '../../../variables' as *;
+@use '../../../mixins' as *;
+
+.page-container {
+  padding: var(--spacing-2xl);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  @include flex-between;
+  margin-bottom: var(--spacing-lg);
+
+  h1 {
+    @include flex-center;
+    gap: var(--spacing-md);
+    margin: 0;
+    color: var(--color-text);
+
+    mat-icon {
+      color: var(--color-primary);
+    }
+  }
+}
+
+// ── Filtros ──────────────────────────────────
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: var(--spacing-2xl);
+
+  button {
+    border-radius: 20px;
+    border: 1.5px solid #d0d0d0;
+    background: #fff;
+    color: #555;
+    font-size: 13px;
+    padding: 0 14px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+
+    &.ativo {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+    }
+  }
+}
+
+.vazio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 0;
+  color: #999;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+  }
+
+  span {
+    font-size: 16px;
+  }
+}
+
+// ── Grid ────────────────────────────────────
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+// ── Card ────────────────────────────────────
+
+.card {
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 16px;
+  height: 220px;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+}
+
+.card.entregue {
+  opacity: 0.5;
+}
+
+.card.alerta {
+  background: #fffde7;
+  border-color: #f9a825;
+
+  .status-icon mat-icon {
+    color: #f9a825;
+  }
+}
+
+.card.critico {
+  background: #fff3f3;
+  border-color: #e53935;
+
+  .status-icon mat-icon {
+    color: #e53935;
+  }
+}
+
+// ── Card interno ─────────────────────────────
+
+.card-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.numero {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+  flex-shrink: 0;
+}
+
+.data-hora {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.status-icon {
+  flex-shrink: 0;
+
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.nome {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 6px;
+}
+
+// ── Badge de status ──────────────────────────
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  border-radius: 10px;
+  padding: 2px 8px 2px 5px;
+  margin-bottom: 8px;
+
+  mat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+  }
+
+  &.status-a-pagar {
+    background: #fff8e1;
+    color: #f57f17;
+  }
+
+  &.status-em-preparo {
+    background: #e3f2fd;
+    color: #1565c0;
+  }
+
+  &.status-concluido {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+}
+
+.itens {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+
+  li {
+    padding: 2px 0;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+}

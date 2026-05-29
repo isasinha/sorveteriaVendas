@@ -1,0 +1,17 @@
+{
+  "hosting": {
+    "target": "vendas",
+    "public": "dist/sorveteriaVendas/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

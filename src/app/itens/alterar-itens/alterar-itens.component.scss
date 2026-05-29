@@ -1,0 +1,238 @@
+@use '../../../variables' as *;
+@use '../../../mixins' as *;
+
+.page-container {
+  padding: var(--spacing-2xl);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  @include flex-between;
+  margin-bottom: var(--spacing-2xl);
+
+  h1 {
+    @include flex-center;
+    gap: var(--spacing-md);
+    margin: 0;
+    font-size: var(--font-size-xl);
+    color: var(--color-text);
+
+    mat-icon { color: var(--color-primary); }
+  }
+}
+
+// ──────────────────────────────────────────────
+// Linhas de blocos
+// ──────────────────────────────────────────────
+
+.blocos-linha {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+  align-items: start;
+
+  @include responsive(mobile) {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+}
+
+// ──────────────────────────────────────────────
+// Bloco (card)
+// ──────────────────────────────────────────────
+
+.bloco {
+  display: flex;
+  flex-direction: column;
+  height: 520px;
+  overflow: hidden;
+}
+
+.bloco-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.bloco-icon {
+  @include flex-center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
+
+  mat-icon {
+    color: white;
+    font-size: 26px;
+    width: 26px;
+    height: 26px;
+  }
+
+  &.icon-tipos      { background-color: var(--color-card-vendas); }
+  &.icon-sabores    { background-color: var(--color-card-estoque); }
+  &.icon-adicionais { background-color: var(--color-card-relatorios); }
+  &.icon-perfis     { background-color: var(--color-card-produtos); }
+  &.icon-barracas   { background-color: #8d6e63; }
+}
+
+.bloco-info {
+  h2 {
+    margin: 0 0 2px;
+    font-size: 18px;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text);
+  }
+
+  .item-count {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+  }
+}
+
+// ──────────────────────────────────────────────
+// Conteúdo do bloco (lista de itens)
+// ──────────────────────────────────────────────
+
+.bloco-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--spacing-md) var(--spacing-xl);
+}
+
+.loading-state {
+  @include flex-center;
+  padding: var(--spacing-3xl) 0;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-3xl) 0;
+  color: var(--color-text-light);
+  list-style: none;
+
+  mat-icon {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    opacity: 0.35;
+  }
+
+  span { font-size: 14px; }
+}
+
+.item-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+
+  .col-nome   { width: auto; }
+  .col-preco  { width: 96px; }
+  .col-qtd    { width: 116px; }
+  .col-acoes  { width: 80px; }
+}
+
+.item-row {
+  transition: background-color var(--transition-fast);
+  border-bottom: 1px solid var(--color-border-light);
+
+  &:last-child { border-bottom: none; }
+
+  &:hover:not(.editing) {
+    background-color: var(--color-bg-hover);
+  }
+
+  &.editing { background-color: var(--color-bg-active); }
+
+  td {
+    padding: 4px 6px;
+    vertical-align: middle;
+  }
+}
+
+.cell-nome {
+  font-size: 14px;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-preco {
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  background-color: var(--color-bg-active);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  padding: 2px 6px;
+}
+
+.cell-qtd {
+  font-size: 13px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-card-estoque);
+  background-color: var(--color-bg-active);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  padding: 2px 6px;
+}
+
+.cell-acoes {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.edit-field       { width: 100%; font-size: 14px; }
+.edit-preco-field { width: 100%; font-size: 14px; }
+.edit-qtd-field   { width: 100%; font-size: 14px; }
+
+.erro-msg {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  background-color: #ffebee;
+  border-radius: var(--radius-sm);
+  color: #c62828;
+  font-size: 13px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+}
+
+// ──────────────────────────────────────────────
+// Footer do bloco (adicionar novo item)
+// ──────────────────────────────────────────────
+
+.bloco-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-xl) var(--spacing-xl);
+  border-top: 1px solid var(--color-border-light);
+
+  .add-field,
+  .add-preco-field,
+  .add-qtd-field { width: 100%; }
+
+  button { width: 100%; }
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}

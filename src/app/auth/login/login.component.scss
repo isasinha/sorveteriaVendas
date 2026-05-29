@@ -1,0 +1,97 @@
+@use '../../../variables' as *;
+@use '../../../mixins' as *;
+
+.login-container {
+  @include flex-center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  padding: var(--spacing-xl);
+
+  @include responsive(mobile) {
+    padding: var(--spacing-md);
+  }
+}
+
+.login-card {
+  width: 100%;
+  max-width: 450px;
+  padding: var(--spacing-xl);
+  @include card-shadow;
+
+  mat-card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: var(--spacing-2xl);
+
+    mat-card-title {
+      margin-bottom: var(--spacing-sm);
+    }
+
+    mat-card-subtitle {
+      text-align: center;
+      color: var(--color-text-muted);
+    }
+  }
+
+  .logo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+
+    .ice-cream-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      color: var(--color-primary);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--color-text);
+      text-align: center;
+    }
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.error-message {
+  @include error-message;
+}
+
+.login-button {
+  margin-top: var(--spacing-lg);
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+
+  mat-spinner {
+    display: inline-block;
+    margin-right: var(--spacing-sm);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+mat-form-field {
+  ::ng-deep {
+    .mat-mdc-form-field-icon-prefix {
+      padding-right: var(--spacing-md);
+    }
+  }
+}

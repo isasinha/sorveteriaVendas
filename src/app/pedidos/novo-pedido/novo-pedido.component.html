@@ -1,0 +1,155 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>
+      <mat-icon>add_shopping_cart</mat-icon>
+      Novo Pedido
+    </h1>
+    <button mat-stroked-button (click)="voltar()">
+      <mat-icon>arrow_back</mat-icon>
+      Voltar
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  } @else {
+
+    <div class="pedido-meta">
+      <mat-form-field appearance="outline" class="numero-field" subscriptSizing="dynamic">
+        <mat-label>Nº do Pedido</mat-label>
+        <mat-icon matPrefix>tag</mat-icon>
+        <input matInput [value]="numeroPedido" readonly>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="nome-field" subscriptSizing="dynamic">
+        <mat-label>Nome do Cliente</mat-label>
+        <mat-icon matPrefix>person</mat-icon>
+        <input matInput [(ngModel)]="nomeCliente" [disabled]="saving">
+      </mat-form-field>
+    </div>
+
+    <!-- Lista de itens adicionados -->
+    @if (pedidoItens.length > 0) {
+      <mat-card class="lista-card">
+        <ul class="lista-itens">
+          @for (item of pedidoItens; track $index; let i = $index) {
+            <li class="lista-row">
+              <span class="lista-qtd">{{ item.quantidade }}×</span>
+              <span class="lista-resumo">{{ getResumoItem(item) }}</span>
+              @if (getPrecoItem(item) != null) {
+                <span class="lista-preco">{{ formatPreco(getPrecoItem(item)! * item.quantidade) }}</span>
+              }
+              <button mat-icon-button matTooltip="Remover" [disabled]="saving"
+                      (click)="removerItemDaLista(i)">
+                <mat-icon>close</mat-icon>
+              </button>
+            </li>
+          }
+        </ul>
+        @if (total > 0) {
+          <div class="lista-total">
+            <span>Total</span>
+            <span class="total-valor">{{ formatPreco(total) }}</span>
+          </div>
+        }
+      </mat-card>
+    }
+
+    <!-- Painel único de composição do item -->
+    <mat-card class="painel-card">
+      <div class="painel-header">
+        <mat-icon>icecream</mat-icon>
+        <span>Compor item</span>
+      </div>
+
+      <div class="painel-content">
+        <div class="item-section">
+          <span class="section-label">Tipo</span>
+          <mat-chip-listbox
+            [ngModel]="itemAtual.tipoId"
+            (ngModelChange)="itemAtual.tipoId = $event; onTipoChange()"
+            [disabled]="saving">
+            @for (tipo of tipos; track tipo.id) {
+              <mat-chip-option [value]="tipo.id" color="primary">
+                {{ tipo.nome }}
+                @if (tipo.preco != null) {
+                  <span class="chip-preco">{{ formatPreco(tipo.preco) }}</span>
+                }
+              </mat-chip-option>
+            }
+          </mat-chip-listbox>
+        </div>
+
+        @if (itemAtual.tipoId) {
+          @if (itemAtual.saboresIds.length > 0) {
+            <div class="item-section">
+              <span class="section-label">Sabores</span>
+              @for (slot of itemAtual.saboresIds; track $index; let si = $index) {
+                <div class="sabor-slot">
+                  <span class="slot-label">{{ si + 1 }}.</span>
+                  <mat-chip-listbox
+                    [ngModel]="itemAtual.saboresIds[si]"
+                    (ngModelChange)="setSaborSlot(si, $event)"
+                    [disabled]="saving">
+                    @for (sabor of sabores; track sabor.id) {
+                      <mat-chip-option [value]="sabor.id" color="primary">{{ sabor.nome }}</mat-chip-option>
+                    }
+                  </mat-chip-listbox>
+                </div>
+              }
+            </div>
+          }
+
+          @if (adicionais.length > 0) {
+            <div class="item-section">
+              <span class="section-label">Adicionais</span>
+              <mat-chip-listbox [(ngModel)]="itemAtual.adicionaisIds" multiple [disabled]="saving">
+                @for (adicional of adicionais; track adicional.id) {
+                  <mat-chip-option [value]="adicional.id" color="primary">{{ adicional.nome }}</mat-chip-option>
+                }
+              </mat-chip-listbox>
+            </div>
+          }
+        }
+      </div>
+
+      <div class="painel-footer">
+        <mat-form-field appearance="outline" class="qtd-field" subscriptSizing="dynamic">
+          <mat-label>Qtd</mat-label>
+          <input matInput type="number" min="1" step="1"
+                 [(ngModel)]="itemAtual.quantidade"
+                 [disabled]="saving">
+        </mat-form-field>
+        <button mat-flat-button color="primary"
+                (click)="adicionarItemNaLista()"
+                [disabled]="!canAdicionarItem || saving">
+          <mat-icon>add</mat-icon>
+          Adicionar à lista
+        </button>
+      </div>
+    </mat-card>
+
+    <!-- Erros, sucesso e salvar -->
+    <div class="form-footer">
+      @if (erro) {
+        <div class="erro-msg">
+          <mat-icon>error_outline</mat-icon>
+          {{ erro }}
+        </div>
+      }
+      <button mat-flat-button color="primary" class="salvar-btn"
+              (click)="salvar()" [disabled]="!canSalvar || saving">
+        <span class="btn-content">
+          @if (saving) {
+            <mat-spinner diameter="18"></mat-spinner>
+          } @else {
+            <mat-icon>save</mat-icon>
+          }
+          Salvar Pedido
+        </span>
+      </button>
+    </div>
+
+  }
+</div>

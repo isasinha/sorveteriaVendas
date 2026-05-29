@@ -1,0 +1,12 @@
+// Variáveis CSS Globais - SorveteriaVendas
+// Importa os tokens de marca compartilhados e adiciona vars específicas do app
+@use 'identidade-visual';
+
+:root {
+  // Cores de cards (menu principal — únicas do sorveteriaVendas)
+  --color-card-vendas: #3498db;
+  --color-card-dia: #2980b9;
+  --color-card-estoque: #9b59b6;
+  --color-card-produtos: #009688;
+  --color-card-relatorios: #f39c12;
+}

@@ -1,0 +1,225 @@
+// Mixins reutilizáveis - SorveteriaVendas
+// Alinhado com a identidade visual da Sorveteria Perseverança (_identidade-visual.scss)
+
+// Botões
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-2xl);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@mixin button-primary {
+  @include button-base;
+  background-color: var(--color-primary);
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--color-primary-rgb), .3);
+  }
+}
+
+@mixin button-secondary {
+  @include button-base;
+  background-color: var(--color-secondary);
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background-color: var(--color-secondary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(var(--color-secondary-rgb), .3);
+  }
+}
+
+@mixin button-danger {
+  @include button-base;
+  background-color: var(--color-danger);
+  color: white;
+  
+  &:hover:not(:disabled) {
+    background-color: #c0392b;
+    transform: scale(1.05);
+  }
+}
+
+// Cards
+@mixin card-base {
+  background-color: var(--color-bg);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-2xl);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+@mixin card-shadow {
+  box-shadow: var(--shadow);
+  transition: box-shadow var(--transition), transform var(--transition);
+
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px);
+  }
+}
+
+@mixin card-interactive {
+  @include card-shadow;
+  cursor: pointer;
+  
+  &:active {
+    transform: translateY(-2px);
+  }
+}
+
+// Layout
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@mixin page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-3xl);
+  flex-shrink: 0;
+  
+  h1 {
+    font-size: 2rem;
+    color: var(--color-text);
+    margin: 0;
+  }
+}
+
+// Inputs
+@mixin input-base {
+  width: 100%;
+  padding: 14px var(--spacing-xl);
+  font-size: 1rem;
+  border: 2px solid var(--color-border-input);
+  border-radius: var(--radius-md);
+  transition: all var(--transition);
+  
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), .1);
+  }
+  
+  &::placeholder {
+    color: var(--color-text-placeholder);
+  }
+  
+  &:disabled {
+    background-color: var(--color-bg-disabled);
+    cursor: not-allowed;
+  }
+}
+
+// Mensagens
+@mixin success-message {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background-color: var(--color-success-bg);
+  border: 1px solid #c3e6cb;
+  border-radius: var(--radius-md);
+  color: #155724;
+  font-size: 1rem;
+  animation: slideDown var(--transition);
+  
+  svg, mat-icon {
+    flex-shrink: 0;
+    color: var(--color-success);
+  }
+}
+
+@mixin error-message {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  background-color: #ffebee;
+  border: 1px solid #f5c6cb;
+  border-radius: var(--radius-md);
+  color: #c62828;
+  font-size: 1rem;
+  
+  svg, mat-icon {
+    flex-shrink: 0;
+    color: var(--color-danger);
+  }
+}
+
+// Responsividade
+@mixin responsive($breakpoint) {
+  @if $breakpoint == mobile {
+    @media (max-width: 480px) {
+      @content;
+    }
+  } @else if $breakpoint == tablet {
+    @media (max-width: 768px) {
+      @content;
+    }
+  } @else if $breakpoint == desktop {
+    @media (min-width: 1024px) {
+      @content;
+    }
+  }
+}
+
+// Animações
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

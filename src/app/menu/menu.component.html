@@ -1,0 +1,49 @@
+<div class="menu-container">
+  <mat-toolbar color="primary" class="toolbar">
+    <div class="toolbar-content">
+      <div class="toolbar-left">
+        <mat-icon class="toolbar-icon">icecream</mat-icon>
+        <span class="toolbar-title">Sorveteria Vendas</span>
+      </div>
+      <div class="toolbar-right">
+        <span class="user-name">Olá, {{ userName }}!</span>
+        <button mat-icon-button (click)="onLogout()" title="Sair">
+          <mat-icon>logout</mat-icon>
+        </button>
+      </div>
+    </div>
+  </mat-toolbar>
+
+  <div class="content">
+    <div class="welcome-section">
+      <h1>Bem-vindo ao Sistema de Vendas</h1>
+      <p>Selecione uma opção abaixo para começar</p>
+    </div>
+
+    <div class="cards-grid">
+      @for (item of menuItems; track item.route) {
+        <mat-card 
+          class="menu-card"
+          [style.border-left-color]="item.color"
+          (click)="navigateTo(item.route)"
+        >
+          <mat-card-header>
+            <div class="card-icon" [style.background-color]="item.color">
+              <mat-icon>{{ item.icon }}</mat-icon>
+            </div>
+            <mat-card-title>{{ item.title }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>{{ item.description }}</p>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-button [style.color]="item.color">
+              Acessar
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,76 @@
+<div class="pag-cabecalho" mat-dialog-title>
+  <div class="pag-numero">
+    <mat-icon>receipt_long</mat-icon>
+    Pedido #{{ data.numero }}
+  </div>
+  <div class="pag-nome">{{ data.nomeCliente }}</div>
+</div>
+
+<mat-dialog-content>
+
+  <ul class="itens-lista">
+    @for (item of data.itens; track $index) {
+      <li class="item-linha">
+        <span class="item-desc">
+          @if (item.quantidade > 1) {
+            <span class="item-qtd">{{ item.quantidade }}×</span>
+          }
+          {{ getResumoItem(item) }}
+        </span>
+        @if (item.tipoPreco != null) {
+          <span class="item-valor">{{ formatPreco(item.tipoPreco * item.quantidade) }}</span>
+        }
+      </li>
+    }
+  </ul>
+
+  <div class="linha-total">
+    <span>Total</span>
+    <span class="valor-destaque">{{ formatPreco(data.total) }}</span>
+  </div>
+
+  <div class="campos-pagamento">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Valor pago</mat-label>
+      <span matTextPrefix>R$&nbsp;</span>
+      <input matInput type="number" min="0" step="0.01"
+             [(ngModel)]="valorPago" placeholder="0,00" autofocus>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Doação (opcional)</mat-label>
+      <span matTextPrefix>R$&nbsp;</span>
+      <input matInput type="number" min="0" step="0.01"
+             [(ngModel)]="doacao" placeholder="0,00">
+    </mat-form-field>
+  </div>
+
+  @if (troco != null) {
+    <div class="linha-troco" [class.insuficiente]="troco < 0">
+      <span>{{ troco < 0 ? 'Faltam' : 'Troco' }}</span>
+      <span class="valor-troco">{{ formatPreco(troco < 0 ? -troco : troco) }}</span>
+    </div>
+  }
+
+  @if (erro) {
+    <div class="erro-msg">
+      <mat-icon>error_outline</mat-icon>
+      {{ erro }}
+    </div>
+  }
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="fechar()" [disabled]="saving">Fechar</button>
+  <button mat-flat-button color="primary" (click)="confirmar()" [disabled]="!canConfirmar || saving">
+    <span class="btn-content">
+      @if (saving) {
+        <mat-spinner diameter="18"></mat-spinner>
+      } @else {
+        <mat-icon>payments</mat-icon>
+      }
+      Confirmar Pagamento
+    </span>
+  </button>
+</mat-dialog-actions>

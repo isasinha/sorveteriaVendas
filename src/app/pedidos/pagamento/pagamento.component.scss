@@ -1,0 +1,159 @@
+.pag-cabecalho {
+  display: flex !important;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin-bottom: 0 !important;
+
+  .pag-numero {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-text);
+
+    mat-icon {
+      color: var(--color-primary);
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
+    }
+  }
+
+  .pag-nome {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    padding-left: 30px;
+  }
+}
+
+mat-dialog-content {
+  min-width: 420px;
+  padding-top: 16px !important;
+
+  @media (max-width: 480px) {
+    min-width: unset;
+  }
+}
+
+// ── Lista de itens ──────────────────────────
+
+.itens-lista {
+  list-style: none;
+  margin: 0 0 0 0;
+  padding: 0;
+}
+
+.item-linha {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 6px 0;
+
+  & + .item-linha {
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .item-desc {
+    flex: 1;
+    font-size: 14px;
+    color: var(--color-text);
+
+    .item-qtd {
+      font-weight: 600;
+      color: var(--color-text-muted);
+      margin-right: 4px;
+    }
+  }
+
+  .item-valor {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+// ── Total ───────────────────────────────────
+
+.linha-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0 16px;
+  border-top: 2px solid rgba(0, 0, 0, 0.1);
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+
+  .valor-destaque {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+}
+
+// ── Campos de pagamento ─────────────────────
+
+.campos-pagamento {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  mat-form-field { width: 100%; }
+}
+
+// ── Troco ───────────────────────────────────
+
+.linha-troco {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background-color: #e8f5e9;
+  font-size: 14px;
+  font-weight: 500;
+  color: #2e7d32;
+  margin-bottom: 8px;
+
+  .valor-troco {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  &.insuficiente {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+}
+
+// ── Erro ────────────────────────────────────
+
+.erro-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: #ffebee;
+  border-radius: 6px;
+  color: #c62828;
+  font-size: 13px;
+  margin-top: 8px;
+
+  mat-icon { font-size: 18px; width: 18px; height: 18px; flex-shrink: 0; }
+}
+
+// ── Botões ──────────────────────────────────
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

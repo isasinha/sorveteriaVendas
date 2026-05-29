@@ -1,0 +1,56 @@
+<h2 mat-dialog-title class="dialog-titulo">
+  <span class="numero">#{{ pedido.numero }}</span>
+  <span class="nome">{{ pedido.nomeCliente }}</span>
+  <span class="badge-status status-{{ statusPedido }}">
+    <mat-icon>{{ statusIcon }}</mat-icon>
+    {{ statusLabel }}
+  </span>
+</h2>
+
+<mat-dialog-content>
+
+  <div class="data-hora">{{ formatDataHora(pedido.data) }}</div>
+
+  <div class="progresso" [class.completo]="todosMarcados">
+    <mat-icon>{{ todosMarcados ? 'check_circle' : 'pending' }}</mat-icon>
+    <span>{{ marcados }} de {{ totalItens }} {{ totalItens === 1 ? 'item' : 'itens' }} confirmados</span>
+  </div>
+
+  <ul class="lista-itens">
+    @for (item of itens; track $index) {
+      <li class="item-linha" [class.item-ok]="item.entregue">
+        <mat-checkbox [(ngModel)]="item.entregue" [disabled]="pedido.entregue"></mat-checkbox>
+        <div class="item-detalhe">
+          <span class="item-tipo">{{ item.tipoNome }}</span>
+          @if (item.saboresNomes.length > 0) {
+            <span class="item-sabores">{{ item.saboresNomes.join(', ') }}</span>
+          }
+          @if (item.adicionaisNomes.length > 0) {
+            <span class="item-adicionais">+ {{ item.adicionaisNomes.join(', ') }}</span>
+          }
+        </div>
+      </li>
+    }
+  </ul>
+
+  @if (erro) {
+    <div class="erro">{{ erro }}</div>
+  }
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="fechar()">Fechar</button>
+  @if (!pedido.entregue) {
+    <button mat-flat-button color="primary"
+            [disabled]="!todosMarcados || saving"
+            (click)="concluirEntrega()">
+      @if (saving) {
+        <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+      } @else {
+        <mat-icon>local_shipping</mat-icon>
+      }
+      Concluir entrega
+    </button>
+  }
+</mat-dialog-actions>

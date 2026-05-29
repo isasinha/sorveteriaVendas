@@ -1,0 +1,78 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--color-bg-page);
+  color: var(--color-text);
+}
+
+body {
+  margin: 0;
+}
+
+// Container padrão
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-xl);
+  
+  @include responsive(mobile) {
+    padding: var(--spacing-md);
+  }
+}
+
+// Material Design overrides
+.mat-mdc-card {
+  margin: var(--spacing-lg);
+  box-shadow: var(--shadow);
+}
+
+// Utility classes
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: var(--spacing-sm); }
+.mt-2 { margin-top: var(--spacing-md); }
+.mt-3 { margin-top: var(--spacing-lg); }
+.mt-4 { margin-top: var(--spacing-xl); }
+
+.mb-1 { margin-bottom: var(--spacing-sm); }
+.mb-2 { margin-bottom: var(--spacing-md); }
+.mb-3 { margin-bottom: var(--spacing-lg); }
+.mb-4 { margin-bottom: var(--spacing-xl); }
+
+.p-1 { padding: var(--spacing-sm); }
+.p-2 { padding: var(--spacing-md); }
+.p-3 { padding: var(--spacing-lg); }
+.p-4 { padding: var(--spacing-xl); }
+
+// Loading state
+.loading {
+  @include flex-center;
+  min-height: 200px;
+}
+
+// Error message global
+.error-message-global {
+  @include error-message;
+  margin: var(--spacing-lg);
+}
+
+// Success message global
+.success-message-global {
+  @include success-message;
+  margin: var(--spacing-lg);
+}

@@ -1,0 +1,74 @@
+<div class="page-container">
+
+  <div class="page-header no-print">
+    <h1>
+      <mat-icon>list_alt</mat-icon>
+      Consultar Pedidos
+    </h1>
+    <button mat-raised-button (click)="voltar()">
+      <mat-icon>arrow_back</mat-icon>
+      Voltar
+    </button>
+  </div>
+
+  <div class="filtros no-print">
+    <button mat-flat-button [class.ativo]="filtro === 'todos'" (click)="filtro = 'todos'">Todos</button>
+    <button mat-flat-button [class.ativo]="filtro === 'atrasados'" (click)="filtro = 'atrasados'">
+      <mat-icon>warning</mat-icon>
+      Atrasados
+    </button>
+    <button mat-flat-button [class.ativo]="filtro === 'nao-entregues'" (click)="filtro = 'nao-entregues'">Não entregues</button>
+    <button mat-flat-button [class.ativo]="filtro === 'concluidos'" (click)="filtro = 'concluidos'">Concluídos</button>
+    <button mat-flat-button [class.ativo]="filtro === 'nao-pagos'" (click)="filtro = 'nao-pagos'">Não pagos</button>
+  </div>
+
+  @if (pedidosFiltrados.length === 0) {
+    <div class="vazio">
+      <mat-icon>inbox</mat-icon>
+      <span>Nenhum pedido encontrado.</span>
+    </div>
+  }
+
+  <div class="grid">
+    @for (pedido of pedidosFiltrados; track pedido.id) {
+      @let status = getStatus(pedido);
+      @let statusP = statusPedido(pedido);
+      <div class="card" [class.alerta]="status === 'alerta'" [class.critico]="status === 'critico'" [class.entregue]="pedido.entregue"
+           (click)="abrirDetalhe(pedido)" role="button" tabindex="0" (keydown.enter)="abrirDetalhe(pedido)">
+
+        <div class="card-topo">
+          <div class="numero">#{{ pedido.numero }}</div>
+          <div class="data-hora">
+            <span class="data">{{ formatData(pedido.data) }}</span>
+            <span class="hora">{{ formatHora(pedido.data) }}</span>
+          </div>
+          @if (status === 'alerta') {
+            <div class="status-icon" title="Pedido aguardando há mais de 15 minutos">
+              <mat-icon>warning</mat-icon>
+            </div>
+          }
+          @if (status === 'critico') {
+            <div class="status-icon" title="Pedido aguardando há mais de 30 minutos">
+              <mat-icon>local_fire_department</mat-icon>
+            </div>
+          }
+        </div>
+
+        <div class="nome">{{ pedido.nomeCliente }}</div>
+
+        <div class="status-badge status-{{ statusP }}">
+          <mat-icon>{{ STATUS_ICON[statusP] }}</mat-icon>
+          {{ STATUS_LABEL[statusP] }}
+        </div>
+
+        <ul class="itens">
+          @for (linha of linhasItens(pedido); track $index) {
+            <li>{{ linha }}</li>
+          }
+        </ul>
+
+      </div>
+    }
+  </div>
+
+</div>

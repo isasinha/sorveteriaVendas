@@ -1,0 +1,140 @@
+.dialog-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 20px 24px 12px;
+
+  .numero {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111;
+  }
+
+  .nome {
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+    flex: 1;
+  }
+
+  .badge-status {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 2px 10px 2px 6px;
+
+    mat-icon {
+      font-size: 15px;
+      width: 15px;
+      height: 15px;
+    }
+
+    &.status-a-pagar {
+      background: #fff8e1;
+      color: #f57f17;
+    }
+
+    &.status-em-preparo {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    &.status-concluido {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+  }
+}
+
+.data-hora {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 16px;
+}
+
+// ── Progresso ────────────────────────────────
+
+.progresso {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 16px;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #bbb;
+  }
+
+  &.completo {
+    color: #2e7d32;
+
+    mat-icon {
+      color: #2e7d32;
+    }
+  }
+}
+
+// ── Lista de itens ───────────────────────────
+
+.lista-itens {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-linha {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fafafa;
+  border: 1.5px solid #eee;
+  transition: background 0.15s, border-color 0.15s;
+
+  &.item-ok {
+    background: #f1f8e9;
+    border-color: #aed581;
+  }
+}
+
+.item-detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.item-tipo {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111;
+}
+
+.item-sabores {
+  font-size: 13px;
+  color: #444;
+}
+
+.item-adicionais {
+  font-size: 12px;
+  color: #777;
+  font-style: italic;
+}
+
+.erro {
+  margin-top: 12px;
+  color: #c62828;
+  font-size: 13px;
+}
