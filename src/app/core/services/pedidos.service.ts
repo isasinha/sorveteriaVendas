@@ -59,8 +59,8 @@ export class PedidosService {
     await runTransaction(db, async tx => {
       const snap = await tx.get(ref);
       if (snap.data()?.['pago']) { resultado = 'ja-pago'; return; }
-      const update: Record<string, unknown> = { pago: true };
-      if (doacao && doacao > 0) update['doacao'] = doacao;
+      const update: { pago: boolean; doacao?: number } = { pago: true };
+      if (doacao && doacao > 0) update.doacao = doacao;
       tx.update(ref, update);
       resultado = 'ok';
     });
