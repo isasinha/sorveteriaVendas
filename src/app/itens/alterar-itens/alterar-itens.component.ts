@@ -71,7 +71,7 @@ export class AlterarItensComponent implements OnInit {
   readonly formatPreco = formatPreco;
 
   blocos: Record<string, BlocoState> = {
-    tipos:      this.novoBloco(),
+    produtos:   this.novoBloco(),
     sabores:    this.novoBloco(),
     adicionais: this.novoBloco(),
     perfis:     this.novoBloco(),
