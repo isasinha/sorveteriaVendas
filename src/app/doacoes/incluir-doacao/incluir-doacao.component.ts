@@ -7,7 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { VendasService } from '../../core/services/vendas.service';
+import { PedidosService } from '../../core/services/pedidos.service';
 
 @Component({
   selector: 'app-incluir-doacao',
@@ -22,7 +22,7 @@ import { VendasService } from '../../core/services/vendas.service';
 })
 export class IncluirDoacaoComponent {
   private router = inject(Router);
-  private vendasService = inject(VendasService);
+  private pedidosService = inject(PedidosService);
 
   valor: number | null = null;
   saving = false;
@@ -35,7 +35,7 @@ export class IncluirDoacaoComponent {
     this.sucesso = false;
     this.erro = '';
     try {
-      await this.vendasService.addVenda({ valor: this.valor, tipo: 'doacao' });
+      await this.pedidosService.addDoacaoAvulsa({ total: this.valor });
       this.valor = null;
       this.sucesso = true;
       setTimeout(() => (this.sucesso = false), 3000);

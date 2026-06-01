@@ -10,10 +10,14 @@ export interface ItemPedido {
 }
 
 export interface NovoPedido {
-  numero: number;
   nomeCliente: string;
   itens: ItemPedido[];
   total: number;
+}
+
+export interface NovaDoacaoAvulsa {
+  total: number;
+  descricao?: string;
 }
 
 export interface Pedido {
@@ -21,6 +25,8 @@ export interface Pedido {
   numero: number;
   nomeCliente: string;
   itens: ItemPedido[];
+  total: number;
+  doacao?: number;
   data: Date;
   entregue: boolean;
   pago: boolean;

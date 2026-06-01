@@ -7,7 +7,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { VendasService } from '../../core/services/vendas.service';
 import { PedidosService } from '../../core/services/pedidos.service';
 import { ItemPedido, resumoItemPedido } from '../../core/models/pedido.model';
 import { formatPreco } from '../../core/utils/formatters';
@@ -34,7 +33,6 @@ export interface PagamentoData {
 export class PagamentoComponent {
   readonly data = inject<PagamentoData>(MAT_DIALOG_DATA);
   private dialogRef = inject(MatDialogRef<PagamentoComponent>);
-  private vendasService = inject(VendasService);
   private pedidosService = inject(PedidosService);
   private router = inject(Router);
 
@@ -60,18 +58,8 @@ export class PagamentoComponent {
     this.saving = true;
     this.erro = '';
     try {
-      const ops: Promise<void>[] = [
-        this.vendasService.addVenda({
-          valor: this.data.total,
-          tipo: 'pedido',
-          descricao: `Pedido #${this.data.numero} - ${this.data.nomeCliente}`,
-        }),
-        this.pedidosService.marcarPago(this.data.pedidoId),
-      ];
-      if (this.doacao && this.doacao > 0) {
-        ops.push(this.vendasService.addVenda({ valor: this.doacao, tipo: 'doacao' }));
-      }
-      await Promise.all(ops);
+      const doacao = this.doacao && this.doacao > 0 ? this.doacao : undefined;
+      await this.pedidosService.marcarPago(this.data.pedidoId, doacao);
       this.dialogRef.close(true);
       this.router.navigate(['/pedidos/impressao'], {
         state: {

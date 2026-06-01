@@ -154,7 +154,6 @@ export class NovoPedidoComponent implements OnInit {
     this.saving = true;
     this.erro = '';
     try {
-      const numeroPedido = this.numeroPedido;
       const nomeCliente = this.nomeCliente.trim();
       const itens: ItemPedido[] = this.pedidoItens.map(f => {
         const tipo = this.tiposMap.get(f.tipoId)!;
@@ -176,15 +175,15 @@ export class NovoPedidoComponent implements OnInit {
       });
       const totalPedido = this.total;
 
-      const pedidoId = await this.pedidosService.addPedido({ numero: numeroPedido, nomeCliente, itens, total: totalPedido });
+      const { id: pedidoId, numero } = await this.pedidosService.addPedido({ nomeCliente, itens, total: totalPedido });
 
       this.nomeCliente = '';
       this.pedidoItens = [];
       this.itemAtual = { tipoId: '', saboresIds: [], adicionaisIds: [], quantidade: 1 };
-      this.numeroPedido++;
+      this.numeroPedido = await this.pedidosService.getProximoNumero();
 
       this.dialog.open(PagamentoComponent, {
-        data: { pedidoId, numero: numeroPedido, nomeCliente, itens, total: totalPedido },
+        data: { pedidoId, numero, nomeCliente, itens, total: totalPedido },
         width: '500px',
         disableClose: true,
       });

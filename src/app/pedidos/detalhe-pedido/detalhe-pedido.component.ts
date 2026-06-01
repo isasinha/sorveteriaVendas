@@ -58,8 +58,10 @@ export class DetalhePedidoComponent {
     this.saving = true;
     this.erro = '';
     try {
-      await this.pedidosService.marcarEntregue(this.pedido.id);
-      this.dialogRef.close(true);
+      const resultado = await this.pedidosService.marcarEntregue(this.pedido.id);
+      if (resultado === 'ok' || resultado === 'ja-entregue') {
+        this.dialogRef.close(true);
+      }
     } catch {
       this.erro = 'Erro ao concluir entrega.';
     } finally {
