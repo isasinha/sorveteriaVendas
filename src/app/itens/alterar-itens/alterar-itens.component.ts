@@ -58,7 +58,7 @@ export class AlterarItensComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   readonly blocosConfig: BlocoConfig[] = [
-    { col: 'tipos',      titulo: 'Tipos',      icon: 'category',        labelAdicionar: 'Novo tipo',      iconClass: 'icon-tipos',      temPreco: true, temQtdSabores: true, span: 2 },
+    { col: 'produtos',    titulo: 'Produtos',   icon: 'category',        labelAdicionar: 'Novo produto',   iconClass: 'icon-produtos',   temPreco: true, temQtdSabores: true, span: 2 },
     { col: 'sabores',    titulo: 'Sabores',    icon: 'icecream',        labelAdicionar: 'Novo sabor',     iconClass: 'icon-sabores'    },
     { col: 'adicionais', titulo: 'Adicionais', icon: 'add_circle',      labelAdicionar: 'Novo adicional', iconClass: 'icon-adicionais' },
     { col: 'perfis',     titulo: 'Perfis',     icon: 'manage_accounts', labelAdicionar: 'Novo perfil',    iconClass: 'icon-perfis'     },

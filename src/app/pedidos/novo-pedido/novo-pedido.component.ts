@@ -85,7 +85,7 @@ export class NovoPedidoComponent implements OnInit {
     this.pedidosService.getProximoNumero().then(n => this.numeroPedido = n);
 
     combineLatest([
-      this.itensService.getItens('tipos'),
+      this.itensService.getItens('produtos'),
       this.itensService.getItens('sabores'),
       this.itensService.getItens('adicionais'),
     ]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

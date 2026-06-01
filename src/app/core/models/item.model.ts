@@ -5,4 +5,4 @@ export interface ItemBase {
   qtdSabores?: number;
 }
 
-export type ColecaoItens = 'tipos' | 'sabores' | 'adicionais' | 'perfis' | 'barracas';
+export type ColecaoItens = 'produtos' | 'sabores' | 'adicionais' | 'perfis' | 'barracas';
