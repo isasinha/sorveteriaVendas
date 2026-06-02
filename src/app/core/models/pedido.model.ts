@@ -8,6 +8,7 @@ export interface ItemPedido {
   adicionaisNomes: string[];
   quantidade: number;
   entregue?: boolean;
+  quantidadeEntregue?: number;
 }
 
 export interface NovoPedido {

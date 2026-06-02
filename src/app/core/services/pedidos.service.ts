@@ -79,6 +79,10 @@ export class PedidosService {
     await updateDoc(doc(db, 'pedidos', id), { cancelado: true });
   }
 
+  async desfazerCancelado(id: string): Promise<void> {
+    await updateDoc(doc(db, 'pedidos', id), { cancelado: deleteField() });
+  }
+
   async marcarNaoRetirado(id: string): Promise<void> {
     await updateDoc(doc(db, 'pedidos', id), { naoRetirado: true });
   }
@@ -87,13 +91,14 @@ export class PedidosService {
     await updateDoc(doc(db, 'pedidos', id), { naoRetirado: deleteField() });
   }
 
-  async updatePedido(id: string, changes: { nomeCliente: string; itens: ItemPedido[]; total: number; doacao?: number; valorPago?: number }): Promise<void> {
+  async updatePedido(id: string, changes: { nomeCliente: string; itens: ItemPedido[]; total: number; doacao?: number; valorPago?: number; pago?: boolean }): Promise<void> {
     await updateDoc(doc(db, 'pedidos', id), {
       nomeCliente: changes.nomeCliente,
       itens: changes.itens,
       total: changes.total,
       doacao: (changes.doacao && changes.doacao > 0) ? changes.doacao : deleteField(),
       valorPago: (changes.valorPago != null && changes.valorPago > 0) ? changes.valorPago : deleteField(),
+      ...(changes.pago === false ? { pago: false } : {}),
     });
   }
 

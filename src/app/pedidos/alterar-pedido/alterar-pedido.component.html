@@ -103,7 +103,7 @@
       Adicionar item
     </button>
 
-    @if (pedido.pago) {
+    @if (pedido.pago || pedido.valorPago) {
       <div class="pagamento-info">
 
         <div class="calculos-row">

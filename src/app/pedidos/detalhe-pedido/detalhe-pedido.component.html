@@ -16,13 +16,26 @@
     <span>{{ marcados }} de {{ totalItens }} {{ totalItens === 1 ? 'item' : 'itens' }} confirmados</span>
   </div>
 
-  <ul class="lista-itens">
+  <div class="itens-wrapper">
+    <ul class="lista-itens">
     @for (item of itens; track $index) {
-      <li class="item-linha" [class.item-ok]="item.marcado">
-        @if (item.jaEntregue) {
+      <li class="item-linha" [class.item-ok]="estaCompleto(item)">
+        @if (item.quantidadeJaEntregue >= item.quantidade) {
           <mat-icon class="icon-entregue">check_circle</mat-icon>
+        } @else if (item.quantidade === 1) {
+          <mat-checkbox [ngModel]="item.quantidadeParaEntregar === 1"
+                        (ngModelChange)="item.quantidadeParaEntregar = $event ? 1 : 0">
+          </mat-checkbox>
         } @else {
-          <mat-checkbox [(ngModel)]="item.marcado"></mat-checkbox>
+          <div class="qty-entrega">
+            <button class="qty-btn-entrega" type="button"
+                    [disabled]="item.quantidadeParaEntregar === 0"
+                    (click)="item.quantidadeParaEntregar = item.quantidadeParaEntregar - 1">−</button>
+            <span class="qty-entrega-val">{{ item.quantidadeParaEntregar }}</span>
+            <button class="qty-btn-entrega" type="button"
+                    [disabled]="item.quantidadeParaEntregar >= maxParaEntregar(item)"
+                    (click)="item.quantidadeParaEntregar = item.quantidadeParaEntregar + 1">+</button>
+          </div>
         }
         <div class="item-detalhe">
           <span class="item-tipo">
@@ -35,11 +48,22 @@
           @if (item.adicionaisNomes.length > 0) {
             <span class="item-adicionais">+ {{ item.adicionaisNomes.join(', ') }}</span>
           }
+          @if (item.quantidade > 1 && item.quantidadeJaEntregue < item.quantidade) {
+            <span class="item-entrega-info">
+              @if (item.quantidadeJaEntregue > 0) {
+                {{ item.quantidadeJaEntregue }} já entregue{{ item.quantidadeJaEntregue > 1 ? 's' : '' }} ·
+              }
+              entregando {{ item.quantidadeParaEntregar }} de {{ maxParaEntregar(item) }}
+            </span>
+          }
         </div>
       </li>
     }
   </ul>
-
+    @if (somenteLeitura) {
+      <div class="itens-overlay"></div>
+    }
+  </div>
   @if (erro) {
     <div class="erro">{{ erro }}</div>
   }
@@ -48,7 +72,13 @@
 
 <mat-dialog-actions align="end">
   <button mat-stroked-button (click)="fechar()">Fechar</button>
-  @if (!pedido.entregue) {
+  @if (pedido.cancelado || pedido.naoRetirado) {
+    <button mat-flat-button color="primary" (click)="voltarParaEmPreparo()">
+      <mat-icon>undo</mat-icon>
+      Voltar para Em preparação
+    </button>
+  }
+  @if (!pedido.entregue && !somenteLeitura) {
     <button mat-flat-button color="primary"
             [disabled]="!algumNovoMarcado || saving"
             (click)="confirmarEntrega()">

@@ -90,6 +90,19 @@ mat-dialog-content {
 
 // ── Lista de itens ───────────────────────────
 
+.itens-wrapper {
+  position: relative;
+}
+
+.itens-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 8px;
+  cursor: default;
+  z-index: 1;
+}
+
 .lista-itens {
   list-style: none;
   margin: 0;
@@ -106,6 +119,48 @@ mat-dialog-content {
   color: #43a047;
   flex-shrink: 0;
   margin-top: 2px;
+}
+
+.qty-entrega {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.qty-btn-entrega {
+  width: 26px;
+  height: 26px;
+  border: 1.5px solid #90a4ae;
+  background: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #546e7a;
+  padding: 0;
+  transition: background 0.15s;
+
+  &:hover:not(:disabled) { background: #eceff1; }
+  &:disabled { opacity: 0.35; cursor: default; }
+}
+
+.qty-entrega-val {
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 22px;
+  text-align: center;
+  color: #1565c0;
+}
+
+.item-entrega-info {
+  font-size: 11px;
+  color: #888;
+  font-style: italic;
 }
 
 .item-qtd {

@@ -145,6 +145,7 @@ export class AlterarPedidoComponent implements OnInit {
     this.erro = '';
     try {
       const novoValorPagoInformado = this.valorPago != null;
+      const voltarParaAPagar = this.pedido.pago && !novoValorPagoInformado;
       const valorPagoFinal = novoValorPagoInformado
         ? this.valorPago! + (this.pedido.valorPago ?? 0) - (this.doacao ?? 0)
         : this.pedido.valorPago;
@@ -157,6 +158,7 @@ export class AlterarPedidoComponent implements OnInit {
         total: this.total,
         doacao: doacaoFinal,
         valorPago: valorPagoFinal,
+        ...(voltarParaAPagar ? { pago: false } : {}),
       });
       this.dialogRef.close(true);
     } catch {

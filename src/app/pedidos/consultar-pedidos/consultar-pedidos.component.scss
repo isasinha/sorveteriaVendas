@@ -105,7 +105,8 @@
   opacity: 0.5;
 }
 
-.card.cancelado {
+.card.cancelado,
+.card.nao-retirado {
   background: #fff5f5;
   border: 2px dashed #e53935;
 }

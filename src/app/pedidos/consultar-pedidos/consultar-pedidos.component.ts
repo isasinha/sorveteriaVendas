@@ -115,13 +115,14 @@ export class ConsultarPedidosComponent implements OnInit {
   }
 
   async cancelar(pedido: Pedido): Promise<void> {
-    if (getStatusPedido(pedido) === 'em-preparo') {
+    if (pedido.valorPago) {
       const ref = this.dialog.open(ConfirmacaoDialogComponent, {
         data: {
           titulo: 'Cancelar pedido',
           mensagem: 'O valor pago será devolvido ao cliente?',
-          labelSim: 'Sim, marcar como cancelado',
-          labelNao: 'Não, marcar como não retirado',
+          labelSim: 'Sim, marcar como Cancelado',
+          labelNao: 'Não, marcar como Não Retirado',
+          labelVoltar: 'Voltar',
         },
         width: '380px',
       });
