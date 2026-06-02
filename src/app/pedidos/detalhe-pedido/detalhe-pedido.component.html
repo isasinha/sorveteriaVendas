@@ -18,10 +18,17 @@
 
   <ul class="lista-itens">
     @for (item of itens; track $index) {
-      <li class="item-linha" [class.item-ok]="item.entregue">
-        <mat-checkbox [(ngModel)]="item.entregue" [disabled]="pedido.entregue"></mat-checkbox>
+      <li class="item-linha" [class.item-ok]="item.marcado">
+        @if (item.jaEntregue) {
+          <mat-icon class="icon-entregue">check_circle</mat-icon>
+        } @else {
+          <mat-checkbox [(ngModel)]="item.marcado"></mat-checkbox>
+        }
         <div class="item-detalhe">
-          <span class="item-tipo">{{ item.tipoNome }}</span>
+          <span class="item-tipo">
+            @if (item.quantidade > 1) { <span class="item-qtd">{{ item.quantidade }}×</span> }
+            {{ item.tipoNome }}
+          </span>
           @if (item.saboresNomes.length > 0) {
             <span class="item-sabores">{{ item.saboresNomes.join(', ') }}</span>
           }
@@ -43,14 +50,14 @@
   <button mat-stroked-button (click)="fechar()">Fechar</button>
   @if (!pedido.entregue) {
     <button mat-flat-button color="primary"
-            [disabled]="!todosMarcados || saving"
-            (click)="concluirEntrega()">
+            [disabled]="!algumNovoMarcado || saving"
+            (click)="confirmarEntrega()">
       @if (saving) {
         <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
       } @else {
         <mat-icon>local_shipping</mat-icon>
       }
-      Concluir entrega
+      {{ todosMarcados ? 'Concluir entrega' : 'Confirmar entrega parcial' }}
     </button>
   }
 </mat-dialog-actions>

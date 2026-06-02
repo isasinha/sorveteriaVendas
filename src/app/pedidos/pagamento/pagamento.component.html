@@ -31,17 +31,24 @@
 
   <div class="campos-pagamento">
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>Valor pago</mat-label>
-      <span matTextPrefix>R$&nbsp;</span>
-      <input matInput type="number" min="0" step="0.01"
-             [(ngModel)]="valorPago" placeholder="0,00" autofocus>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
       <mat-label>Doação (opcional)</mat-label>
       <span matTextPrefix>R$&nbsp;</span>
       <input matInput type="number" min="0" step="0.01"
              [(ngModel)]="doacao" placeholder="0,00">
+    </mat-form-field>
+  </div>
+
+  <div class="linha-total-a-pagar">
+    <span>Total a pagar</span>
+    <span class="valor-total-a-pagar">{{ formatPreco(data.total + (doacao ?? 0)) }}</span>
+  </div>
+
+  <div class="campos-pagamento">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Valor pago</mat-label>
+      <span matTextPrefix>R$&nbsp;</span>
+      <input matInput type="number" min="0" step="0.01"
+             [(ngModel)]="valorPago" placeholder="0,00">
     </mat-form-field>
   </div>
 

@@ -9,11 +9,13 @@ import { PedidosService } from '../../core/services/pedidos.service';
 import { Pedido, ItemPedido, StatusPedido, STATUS_ICON, STATUS_LABEL, getStatusPedido } from '../../core/models/pedido.model';
 import { formatDataHora } from '../../core/utils/formatters';
 
-interface ItemExpandido {
+interface ItemEntrega {
   tipoNome: string;
   saboresNomes: string[];
   adicionaisNomes: string[];
-  entregue: boolean;
+  quantidade: number;
+  jaEntregue: boolean;
+  marcado: boolean;
 }
 
 @Component({
@@ -35,35 +37,38 @@ export class DetalhePedidoComponent {
   saving = false;
   erro = '';
 
-  itens: ItemExpandido[] = this.pedido.itens.flatMap((item: ItemPedido) =>
-    Array.from({ length: item.quantidade }, () => ({
-      tipoNome: item.tipoNome,
-      saboresNomes: item.saboresNomes,
-      adicionaisNomes: item.adicionaisNomes,
-      entregue: this.pedido.entregue,
-    }))
-  );
+  itens: ItemEntrega[] = this.pedido.itens.map((item: ItemPedido) => ({
+    tipoNome: item.tipoNome,
+    saboresNomes: item.saboresNomes,
+    adicionaisNomes: item.adicionaisNomes,
+    quantidade: item.quantidade,
+    jaEntregue: item.entregue ?? this.pedido.entregue,
+    marcado: item.entregue ?? this.pedido.entregue,
+  }));
 
   get totalItens(): number { return this.itens.length; }
-  get marcados(): number { return this.itens.filter(i => i.entregue).length; }
+  get marcados(): number { return this.itens.filter(i => i.marcado).length; }
   get todosMarcados(): boolean { return this.marcados === this.totalItens; }
+  get algumNovoMarcado(): boolean { return this.itens.some(i => !i.jaEntregue && i.marcado); }
 
   readonly statusPedido: StatusPedido = getStatusPedido(this.pedido);
   readonly statusLabel: string = STATUS_LABEL[this.statusPedido];
   readonly statusIcon: string = STATUS_ICON[this.statusPedido];
   readonly formatDataHora = formatDataHora;
 
-  async concluirEntrega(): Promise<void> {
-    if (this.saving || this.pedido.entregue) return;
+  async confirmarEntrega(): Promise<void> {
+    if (this.saving || !this.algumNovoMarcado) return;
     this.saving = true;
     this.erro = '';
     try {
-      const resultado = await this.pedidosService.marcarEntregue(this.pedido.id);
-      if (resultado === 'ok' || resultado === 'ja-entregue') {
-        this.dialogRef.close(true);
-      }
+      const itensAtualizados: ItemPedido[] = this.pedido.itens.map((item, idx) => ({
+        ...item,
+        entregue: this.itens[idx].marcado,
+      }));
+      await this.pedidosService.salvarEntregaParcial(this.pedido.id, itensAtualizados);
+      this.dialogRef.close(true);
     } catch {
-      this.erro = 'Erro ao concluir entrega.';
+      this.erro = 'Erro ao salvar entrega.';
     } finally {
       this.saving = false;
     }

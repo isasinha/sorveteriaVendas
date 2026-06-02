@@ -5,16 +5,16 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { combineLatest } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PessoasService } from '../../core/services/pessoas.service';
 import { Pessoa } from '../../core/models/pessoa.model';
 import { ItemBase } from '../../core/models/item.model';
-import { PerfilCompleto, Funcionalidade, FUNCIONALIDADES, isGerencia } from '../../core/models/perfil.model';
+import { PerfilCompleto, FUNCIONALIDADES, isTI } from '../../core/models/perfil.model';
 
 @Component({
   selector: 'app-controle-perfil',
@@ -22,8 +22,7 @@ import { PerfilCompleto, Funcionalidade, FUNCIONALIDADES, isGerencia } from '../
   imports: [
     FormsModule,
     MatCardModule, MatButtonModule, MatIconModule,
-    MatFormFieldModule, MatSelectModule, MatProgressSpinnerModule,
-    MatCheckboxModule, MatTooltipModule,
+    MatFormFieldModule, MatInputModule, MatSelectModule, MatProgressSpinnerModule, MatCheckboxModule,
   ],
   templateUrl: './controle-perfil.component.html',
   styleUrl: './controle-perfil.component.scss'
@@ -34,7 +33,7 @@ export class ControlePerfilComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   readonly funcionalidades = FUNCIONALIDADES;
-  readonly isGerencia = isGerencia;
+  readonly isTI = isTI;
 
   pessoas: Pessoa[] = [];
   barracas: ItemBase[] = [];
@@ -42,20 +41,23 @@ export class ControlePerfilComponent implements OnInit {
   loading = true;
   erroCarregar = '';
 
-  // Atribuição de pessoa
+  busca = '';
   selecionada: Pessoa | null = null;
+
+  get pessoasFiltradas(): Pessoa[] {
+    const termo = this.busca.trim().toLowerCase();
+    if (!termo) return [];
+    return this.pessoas.filter(p =>
+      p.nome.toLowerCase().includes(termo) || p.id.toLowerCase().includes(termo)
+    );
+  }
+
   formBarraca = '';
   formPerfil = '';
   formEmail = '';
   saving = false;
   sucesso = false;
   erroSalvar = '';
-
-  // Permissões por perfil
-  editPermissoes = new Map<string, Set<Funcionalidade>>();
-  savingPerfilId: string | null = null;
-  erroPermissoes = '';
-  sucessoPerfilId: string | null = null;
 
   ngOnInit(): void {
     combineLatest([
@@ -68,11 +70,6 @@ export class ControlePerfilComponent implements OnInit {
         this.barracas = barracas;
         this.perfis = perfis;
         this.loading = false;
-        perfis.forEach(p => {
-          if (!this.editPermissoes.has(p.id)) {
-            this.editPermissoes.set(p.id, new Set(p.permissoes ?? []));
-          }
-        });
         if (this.selecionada) {
           const atualizada = pessoas.find(p => p.id === this.selecionada!.id);
           if (atualizada) this.selecionada = atualizada;
@@ -119,33 +116,6 @@ export class ControlePerfilComponent implements OnInit {
       this.erroSalvar = 'Erro ao salvar atribuição.';
     } finally {
       this.saving = false;
-    }
-  }
-
-  temPermissaoPerfil(perfilId: string, chave: Funcionalidade): boolean {
-    return this.editPermissoes.get(perfilId)?.has(chave) ?? false;
-  }
-
-  togglePermissao(perfilId: string, chave: Funcionalidade): void {
-    const set = this.editPermissoes.get(perfilId);
-    if (!set) return;
-    if (set.has(chave)) set.delete(chave); else set.add(chave);
-  }
-
-  async salvarPermissoes(perfilId: string): Promise<void> {
-    if (this.savingPerfilId) return;
-    this.savingPerfilId = perfilId;
-    this.erroPermissoes = '';
-    this.sucessoPerfilId = null;
-    try {
-      const permissoes = Array.from(this.editPermissoes.get(perfilId) ?? []);
-      await this.pessoasService.updatePermissoes(perfilId, permissoes);
-      this.sucessoPerfilId = perfilId;
-      setTimeout(() => (this.sucessoPerfilId = null), 3000);
-    } catch {
-      this.erroPermissoes = 'Erro ao salvar permissões.';
-    } finally {
-      this.savingPerfilId = null;
     }
   }
 

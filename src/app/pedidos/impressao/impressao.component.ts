@@ -11,6 +11,7 @@ interface ImpressaoState {
   nomeCliente: string;
   itens: ItemPedido[];
   total: number;
+  origem?: string;
 }
 
 @Component({
@@ -29,17 +30,19 @@ export class ImpressaoComponent implements OnInit {
   itensExpandidos: ItemPedido[] = [];
   total = 0;
   qrDataUrl = '';
+  private origem = '/pedidos/novo';
 
   ngOnInit(): void {
     const state = history.state as ImpressaoState;
     if (!state?.numero) {
-      this.router.navigate(['/pedidos/novo']);
+      this.router.navigate([this.origem]);
       return;
     }
     this.numero = state.numero;
     this.nomeCliente = state.nomeCliente;
     this.itens = state.itens;
     this.total = state.total;
+    this.origem = state.origem ?? '/pedidos/novo';
     this.itensExpandidos = state.itens.flatMap(item => Array(item.quantidade).fill(item));
 
     const qrText = `Pedido #${this.numero}\n${this.nomeCliente}`;
@@ -57,6 +60,6 @@ export class ImpressaoComponent implements OnInit {
   }
 
   voltar(): void {
-    this.router.navigate(['/pedidos/novo']);
+    this.router.navigate([this.origem]);
   }
 }

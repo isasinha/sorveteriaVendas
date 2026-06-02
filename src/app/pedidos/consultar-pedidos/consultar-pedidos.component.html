@@ -20,6 +20,7 @@
     <button mat-flat-button [class.ativo]="filtro === 'nao-entregues'" (click)="filtro = 'nao-entregues'">Não entregues</button>
     <button mat-flat-button [class.ativo]="filtro === 'concluidos'" (click)="filtro = 'concluidos'">Concluídos</button>
     <button mat-flat-button [class.ativo]="filtro === 'nao-pagos'" (click)="filtro = 'nao-pagos'">Não pagos</button>
+    <button mat-flat-button [class.ativo]="filtro === 'cancelados'" (click)="filtro = 'cancelados'">Cancelados</button>
   </div>
 
   @if (pedidosFiltrados.length === 0) {
@@ -33,7 +34,7 @@
     @for (pedido of pedidosFiltrados; track pedido.id) {
       @let status = getStatus(pedido);
       @let statusP = statusPedido(pedido);
-      <div class="card" [class.alerta]="status === 'alerta'" [class.critico]="status === 'critico'" [class.entregue]="pedido.entregue"
+      <div class="card" [class.alerta]="status === 'alerta'" [class.critico]="status === 'critico'" [class.entregue]="pedido.entregue" [class.cancelado]="pedido.cancelado"
            (click)="abrirDetalhe(pedido)" role="button" tabindex="0" (keydown.enter)="abrirDetalhe(pedido)">
 
         <div class="card-topo">
@@ -42,12 +43,12 @@
             <span class="data">{{ formatData(pedido.data) }}</span>
             <span class="hora">{{ formatHora(pedido.data) }}</span>
           </div>
-          @if (status === 'alerta') {
+          @if (!pedido.cancelado && status === 'alerta') {
             <div class="status-icon" title="Pedido aguardando há mais de 15 minutos">
               <mat-icon>warning</mat-icon>
             </div>
           }
-          @if (status === 'critico') {
+          @if (!pedido.cancelado && status === 'critico') {
             <div class="status-icon" title="Pedido aguardando há mais de 30 minutos">
               <mat-icon>local_fire_department</mat-icon>
             </div>
@@ -62,10 +63,47 @@
         </div>
 
         <ul class="itens">
-          @for (linha of linhasItens(pedido); track $index) {
-            <li>{{ linha }}</li>
+          @for (item of pedido.itens; track $index) {
+            <li [class.item-entregue]="item.entregue">
+              @if (item.entregue) {
+                <mat-icon class="check-item">check_circle</mat-icon>
+              }
+              {{ (item.quantidade > 1 ? item.quantidade + '× ' : '') + resumoItemPedido(item) }}
+            </li>
           }
         </ul>
+
+        <div class="card-actions" (click)="$event.stopPropagation()">
+          @if (!pedido.naoRetirado) {
+            <button class="btn-acao btn-entregar"
+                    [disabled]="!podeEntregar(pedido) || entregandoId !== null"
+                    (click)="entregar(pedido)">
+              @if (entregandoId === pedido.id) {
+                <mat-icon class="spin">sync</mat-icon>
+              } @else {
+                <mat-icon>check_circle</mat-icon>
+              }
+              Entregar
+            </button>
+            <button class="btn-acao btn-azul btn-alterar" matTooltip="Alterar pedido"
+                    [disabled]="!podeAlterar(pedido)"
+                    (click)="editarPedido(pedido)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button class="btn-acao btn-vermelho btn-cancelar"
+                    matTooltip="Cancelar pedido"
+                    [disabled]="!podeCancelar(pedido)"
+                    (click)="cancelar(pedido)">
+              <mat-icon>close</mat-icon>
+            </button>
+            <button class="btn-acao btn-azul btn-parcial"
+                    [disabled]="!podeEntregaParcial(pedido)"
+                    (click)="abrirDetalhe(pedido)">
+              <mat-icon>splitscreen</mat-icon>
+              Entrega parcial
+            </button>
+          }
+        </div>
 
       </div>
     }

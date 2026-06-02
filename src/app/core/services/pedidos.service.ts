@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { db } from '../config/firebase.config';
 import {
-  collection, doc, addDoc, getDoc, query, orderBy,
-  onSnapshot, serverTimestamp, runTransaction, Timestamp
+  collection, doc, addDoc, getDoc, updateDoc, query, orderBy,
+  onSnapshot, serverTimestamp, runTransaction, Timestamp, deleteField
 } from 'firebase/firestore';
 import { Observable } from 'rxjs';
 import { NovoPedido, NovaDoacaoAvulsa, Pedido, ItemPedido } from '../models/pedido.model';
@@ -41,6 +41,14 @@ export class PedidosService {
     });
   }
 
+  async salvarEntregaParcial(id: string, itens: ItemPedido[]): Promise<void> {
+    const todosEntregues = itens.every(i => i.entregue);
+    await updateDoc(doc(db, 'pedidos', id), {
+      itens,
+      ...(todosEntregues ? { entregue: true } : {}),
+    });
+  }
+
   async marcarEntregue(id: string): Promise<'ok' | 'ja-entregue'> {
     const ref = doc(db, 'pedidos', id);
     let resultado!: 'ok' | 'ja-entregue';
@@ -53,18 +61,40 @@ export class PedidosService {
     return resultado;
   }
 
-  async marcarPago(id: string, doacao?: number): Promise<'ok' | 'ja-pago'> {
+  async marcarPago(id: string, valorPago: number, doacao?: number): Promise<'ok' | 'ja-pago'> {
     const ref = doc(db, 'pedidos', id);
     let resultado!: 'ok' | 'ja-pago';
     await runTransaction(db, async tx => {
       const snap = await tx.get(ref);
       if (snap.data()?.['pago']) { resultado = 'ja-pago'; return; }
-      const update: { pago: boolean; doacao?: number } = { pago: true };
+      const update: { pago: boolean; valorPago: number; doacao?: number } = { pago: true, valorPago };
       if (doacao && doacao > 0) update.doacao = doacao;
       tx.update(ref, update);
       resultado = 'ok';
     });
     return resultado;
+  }
+
+  async cancelarPedido(id: string): Promise<void> {
+    await updateDoc(doc(db, 'pedidos', id), { cancelado: true });
+  }
+
+  async marcarNaoRetirado(id: string): Promise<void> {
+    await updateDoc(doc(db, 'pedidos', id), { naoRetirado: true });
+  }
+
+  async desfazerNaoRetirado(id: string): Promise<void> {
+    await updateDoc(doc(db, 'pedidos', id), { naoRetirado: deleteField() });
+  }
+
+  async updatePedido(id: string, changes: { nomeCliente: string; itens: ItemPedido[]; total: number; doacao?: number; valorPago?: number }): Promise<void> {
+    await updateDoc(doc(db, 'pedidos', id), {
+      nomeCliente: changes.nomeCliente,
+      itens: changes.itens,
+      total: changes.total,
+      doacao: (changes.doacao && changes.doacao > 0) ? changes.doacao : deleteField(),
+      valorPago: (changes.valorPago != null && changes.valorPago > 0) ? changes.valorPago : deleteField(),
+    });
   }
 
   getPedidos(): Observable<Pedido[]> {
@@ -83,10 +113,13 @@ export class PedidosService {
                 nomeCliente: data['nomeCliente'] as string,
                 itens: (data['itens'] ?? []) as ItemPedido[],
                 total: (data['total'] ?? 0) as number,
+                valorPago: data['valorPago'] as number | undefined,
                 doacao: data['doacao'] as number | undefined,
                 data: ts?.toDate() ?? new Date(),
                 entregue: (data['entregue'] as boolean) ?? false,
                 pago: (data['pago'] as boolean) ?? false,
+                cancelado: (data['cancelado'] as boolean) ?? false,
+                naoRetirado: (data['naoRetirado'] as boolean) ?? false,
               };
             })
         );

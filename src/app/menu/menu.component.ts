@@ -36,7 +36,7 @@ export class MenuComponent {
     { title: 'Novo Pedido',              description: 'Registrar um novo pedido',                          icon: 'add_shopping_cart', route: '/pedidos/novo',     color: '#e91e63', chave: 'pedidos.novo'      },
     { title: 'Consultar Pedidos',        description: 'Visualizar e gerenciar pedidos',                    icon: 'list_alt',          route: '/pedidos/consultar',color: '#ff4081', chave: 'pedidos.consultar' },
     { title: 'Incluir Doação',           description: 'Registrar doações avulsas recebidas',               icon: 'volunteer_activism', route: '/doacoes/incluir',  color: '#673ab7', chave: 'doacoes.incluir'   },
-    { title: 'Alterar Itens Disponíveis',description: 'Gerenciar disponibilidade de produtos e outros itens', icon: 'inventory_2',   route: '/itens/alterar',    color: '#009688', chave: 'itens.alterar'     },
+    { title: 'Configurações',              description: 'Gerenciar disponibilidade de produtos e outros itens', icon: 'inventory_2',   route: '/itens/alterar',    color: '#009688', chave: 'itens.alterar'     },
     { title: 'Controle de Perfil',       description: 'Gerenciar perfis de voluntários',                   icon: 'account_circle',    route: '/perfil/controle',  color: '#ff9800', chave: 'perfil.controle'   },
     { title: 'Relatórios',               description: 'Relatórios e estatísticas',                         icon: 'assessment',        route: '/relatorios',       color: '#2196f3', chave: 'relatorios'        },
   ];

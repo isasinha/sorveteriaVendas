@@ -17,6 +17,7 @@ export interface PagamentoData {
   nomeCliente: string;
   itens: ItemPedido[];
   total: number;
+  origem: string;
 }
 
 @Component({
@@ -59,7 +60,7 @@ export class PagamentoComponent {
     this.erro = '';
     try {
       const doacao = this.doacao && this.doacao > 0 ? this.doacao : undefined;
-      await this.pedidosService.marcarPago(this.data.pedidoId, doacao);
+      await this.pedidosService.marcarPago(this.data.pedidoId, this.valorPago! - (this.doacao ?? 0), doacao);
       this.dialogRef.close(true);
       this.router.navigate(['/pedidos/impressao'], {
         state: {
@@ -67,6 +68,7 @@ export class PagamentoComponent {
           nomeCliente: this.data.nomeCliente,
           itens: this.data.itens,
           total: this.data.total,
+          origem: this.data.origem,
         }
       });
     } catch {

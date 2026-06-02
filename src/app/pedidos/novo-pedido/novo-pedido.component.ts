@@ -14,6 +14,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ItensService } from '../../core/services/itens.service';
 import { PedidosService } from '../../core/services/pedidos.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ItemBase } from '../../core/models/item.model';
 import { ItemPedido } from '../../core/models/pedido.model';
 import { PagamentoComponent } from '../pagamento/pagamento.component';
@@ -43,6 +44,7 @@ export class NovoPedidoComponent implements OnInit {
   private dialog = inject(MatDialog);
   private itensService = inject(ItensService);
   private pedidosService = inject(PedidosService);
+  private authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
 
   readonly formatPreco = formatPreco;
@@ -182,11 +184,15 @@ export class NovoPedidoComponent implements OnInit {
       this.itemAtual = { tipoId: '', saboresIds: [], adicionaisIds: [], quantidade: 1 };
       this.numeroPedido = await this.pedidosService.getProximoNumero();
 
-      this.dialog.open(PagamentoComponent, {
-        data: { pedidoId, numero, nomeCliente, itens, total: totalPedido },
-        width: '500px',
-        disableClose: true,
-      });
+      const isFila = this.authService.getPerfil()?.nome.trim().toLowerCase() === 'fila';
+      if (!isFila) {
+        this.dialog.open(PagamentoComponent, {
+          data: { pedidoId, numero, nomeCliente, itens, total: totalPedido, origem: '/pedidos/novo' },
+          width: '500px',
+          maxHeight: '90vh',
+          disableClose: true,
+        });
+      }
     } catch {
       this.erro = 'Erro ao salvar pedido.';
     } finally {

@@ -10,17 +10,20 @@ export const FUNCIONALIDADES: { chave: Funcionalidade; label: string }[] = [
   { chave: 'pedidos.novo',      label: 'Novo Pedido' },
   { chave: 'pedidos.consultar', label: 'Consultar Pedidos' },
   { chave: 'doacoes.incluir',   label: 'Incluir Doação' },
-  { chave: 'itens.alterar',     label: 'Alterar Itens' },
+  { chave: 'itens.alterar',     label: 'Configurações' },
   { chave: 'perfil.controle',   label: 'Controle de Perfil' },
   { chave: 'relatorios',        label: 'Relatórios' },
 ];
+
+export type EscopoBarraca = 'todas' | 'propria';
 
 export interface PerfilCompleto {
   id: string;
   nome: string;
   permissoes?: Funcionalidade[];
+  escopo?: EscopoBarraca;
 }
 
-export function isGerencia(nome: string): boolean {
-  return ['gerência', 'gerencia'].includes(nome.trim().toLowerCase());
+export function isTI(nome: string): boolean {
+  return nome.trim().toLowerCase() === 'ti';
 }

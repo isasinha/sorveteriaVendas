@@ -31,15 +31,33 @@
           <span class="badge">{{ pessoas.length }}</span>
         </div>
 
-        @if (pessoas.length === 0) {
+        <div class="busca-wrapper">
+          <mat-form-field appearance="outline" class="busca-field" subscriptSizing="dynamic">
+            <mat-label>Buscar por nome ou ID</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput [(ngModel)]="busca" placeholder="Digite para buscar...">
+            @if (busca) {
+              <button matSuffix mat-icon-button (click)="busca = ''">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </mat-form-field>
+        </div>
+
+        @if (!busca.trim()) {
+          <div class="empty-state">
+            <mat-icon>search</mat-icon>
+            <span>Digite um nome ou ID para buscar</span>
+          </div>
+        } @else if (pessoasFiltradas.length === 0) {
           <div class="empty-state">
             <mat-icon>person_off</mat-icon>
-            <span>Nenhuma pessoa cadastrada</span>
+            <span>Nenhuma pessoa encontrada</span>
           </div>
         }
 
         <ul class="pessoas-list">
-          @for (p of pessoas; track p.id) {
+          @for (p of pessoasFiltradas; track p.id) {
             <li class="pessoa-row"
                 [class.ativa]="selecionada?.id === p.id"
                 (click)="selecionar(p)">
@@ -146,20 +164,13 @@
 
     </div>
 
-    <!-- ── Permissões por perfil ──────────────────────────────── -->
+    <!-- ── Permissões por Perfil (guia) ────────────────────────── -->
     <mat-card class="permissoes-card">
       <div class="card-header">
         <mat-icon>security</mat-icon>
         <h2>Permissões por Perfil</h2>
       </div>
-
-      @if (erroPermissoes) {
-        <div class="erro-msg permissoes-erro">
-          <mat-icon>error_outline</mat-icon>
-          {{ erroPermissoes }}
-        </div>
-      }
-
+      <p class="permissoes-info">Para editar permissões, acesse <strong>Configurações</strong>.</p>
       <div class="permissoes-table-wrap">
         <table class="permissoes-table">
           <thead>
@@ -168,44 +179,32 @@
               @for (f of funcionalidades; track f.chave) {
                 <th class="col-func">{{ f.label }}</th>
               }
-              <th class="col-acao"></th>
+              <th class="col-escopo">Visibilidade</th>
             </tr>
           </thead>
           <tbody>
             @for (p of perfis; track p.id) {
-              <tr [class.gerencia-row]="isGerencia(p.nome)">
-                <td class="cell-perfil">
-                  <span class="perfil-nome">{{ p.nome }}</span>
-                  @if (isGerencia(p.nome)) {
-                    <mat-icon class="lock-icon" matTooltip="Acesso total — não editável">lock</mat-icon>
-                  }
+              <tr [class.gerencia-row]="isTI(p.nome)">
+                <td>
+                  <div class="cell-perfil">
+                    <span class="perfil-nome">{{ p.nome }}</span>
+                    @if (isTI(p.nome)) {
+                      <mat-icon class="lock-icon">lock</mat-icon>
+                    }
+                  </div>
                 </td>
                 @for (f of funcionalidades; track f.chave) {
                   <td class="cell-check">
                     <mat-checkbox
-                      [checked]="isGerencia(p.nome) || temPermissaoPerfil(p.id, f.chave)"
-                      [disabled]="isGerencia(p.nome) || savingPerfilId === p.id"
-                      (change)="togglePermissao(p.id, f.chave)">
+                      [checked]="isTI(p.nome) || !!p.permissoes?.includes(f.chave)"
+                      [disabled]="true">
                     </mat-checkbox>
                   </td>
                 }
-                <td class="cell-acao">
-                  @if (!isGerencia(p.nome)) {
-                    @if (sucessoPerfilId === p.id) {
-                      <mat-icon class="salvo-icon">check_circle</mat-icon>
-                    } @else {
-                      <button mat-stroked-button color="primary"
-                              (click)="salvarPermissoes(p.id)"
-                              [disabled]="savingPerfilId !== null">
-                        @if (savingPerfilId === p.id) {
-                          <mat-spinner diameter="16"></mat-spinner>
-                        } @else {
-                          <mat-icon>save</mat-icon>
-                        }
-                        Salvar
-                      </button>
-                    }
-                  }
+                <td class="cell-escopo">
+                  <span class="escopo-badge" [class.escopo-todas]="isTI(p.nome) || p.escopo === 'todas'">
+                    {{ isTI(p.nome) || p.escopo === 'todas' ? 'Todas' : 'Só própria barraca' }}
+                  </span>
                 </td>
               </tr>
             }

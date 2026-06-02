@@ -1,3 +1,8 @@
+mat-dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
 .dialog-titulo {
   display: flex;
   align-items: center;
@@ -92,6 +97,21 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.icon-entregue {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #43a047;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.item-qtd {
+  font-weight: 700;
+  color: var(--color-primary, #1976d2);
+  margin-right: 2px;
 }
 
 .item-linha {

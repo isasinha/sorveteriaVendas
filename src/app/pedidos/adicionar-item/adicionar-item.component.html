@@ -1,0 +1,74 @@
+<h2 mat-dialog-title>
+  <mat-icon>icecream</mat-icon>
+  Adicionar item
+</h2>
+
+<mat-dialog-content>
+  @if (loading) {
+    <div class="loading-state">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else {
+
+    <div class="item-section">
+      <span class="section-label">Tipo</span>
+      <mat-chip-listbox
+        [ngModel]="tipoId"
+        (ngModelChange)="tipoId = $event; onTipoChange()">
+        @for (tipo of tipos; track tipo.id) {
+          <mat-chip-option [value]="tipo.id" color="primary">
+            {{ tipo.nome }}
+            @if (tipo.preco != null) {
+              <span class="chip-preco">{{ formatPreco(tipo.preco) }}</span>
+            }
+          </mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
+
+    @if (tipoId) {
+      @if (saboresIds.length > 0) {
+        <div class="item-section">
+          <span class="section-label">Sabores</span>
+          @for (slot of saboresIds; track $index; let si = $index) {
+            <div class="sabor-slot">
+              <span class="slot-label">{{ si + 1 }}.</span>
+              <mat-chip-listbox
+                [ngModel]="saboresIds[si]"
+                (ngModelChange)="setSaborSlot(si, $event)">
+                @for (sabor of sabores; track sabor.id) {
+                  <mat-chip-option [value]="sabor.id" color="primary">{{ sabor.nome }}</mat-chip-option>
+                }
+              </mat-chip-listbox>
+            </div>
+          }
+        </div>
+      }
+
+      @if (adicionais.length > 0) {
+        <div class="item-section">
+          <span class="section-label">Adicionais</span>
+          <mat-chip-listbox [(ngModel)]="adicionaisIds" multiple>
+            @for (adicional of adicionais; track adicional.id) {
+              <mat-chip-option [value]="adicional.id" color="primary">{{ adicional.nome }}</mat-chip-option>
+            }
+          </mat-chip-listbox>
+        </div>
+      }
+    }
+
+    <mat-form-field appearance="outline" class="qtd-field" subscriptSizing="dynamic">
+      <mat-label>Quantidade</mat-label>
+      <input matInput type="number" min="1" step="1" [(ngModel)]="quantidade">
+    </mat-form-field>
+
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="fechar()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="confirmar()" [disabled]="!canConfirmar">
+    <mat-icon>add</mat-icon>
+    Adicionar
+  </button>
+</mat-dialog-actions>

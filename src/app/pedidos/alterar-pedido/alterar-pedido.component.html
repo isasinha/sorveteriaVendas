@@ -1,0 +1,170 @@
+<h2 mat-dialog-title>
+  <mat-icon>edit</mat-icon>
+  #{{ pedido.numero }} — {{ pedido.nomeCliente }}
+  <span class="status-badge" [class.pago]="pedido.pago">
+    <mat-icon>{{ pedido.pago ? 'check_circle' : 'payments' }}</mat-icon>
+    {{ pedido.pago ? 'Pago' : 'Pendente' }}
+  </span>
+</h2>
+
+<mat-dialog-content>
+  @if (loading) {
+    <div class="loading-state">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else {
+
+    <div class="items-list">
+      @for (item of pedidoItens; track $index; let i = $index) {
+        <div class="item-bloco">
+
+          <div class="item-main">
+            <div class="qty-controls">
+              <button class="qty-btn" (click)="decrementarQtd(i)" [disabled]="saving"
+                      [matTooltip]="item.quantidade === 1 ? 'Remover item' : 'Diminuir quantidade'">
+                <mat-icon>{{ item.quantidade === 1 ? 'delete_outline' : 'remove' }}</mat-icon>
+              </button>
+              <span class="qty-value">{{ item.quantidade }}</span>
+              <button class="qty-btn" (click)="incrementarQtd(i)" [disabled]="saving" matTooltip="Aumentar quantidade">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+
+            <span class="item-desc">{{ getResumoItem(item) }}</span>
+
+            @if (item.tipoPreco != null) {
+              <span class="item-preco">{{ formatPreco(item.tipoPreco * item.quantidade) }}</span>
+            }
+
+            @if (item.saboresIds.length > 0 || adicionais.length > 0) {
+              <button class="edit-btn" [class.ativo]="editandoIndex === i"
+                      matTooltip="Editar sabores / adicionais"
+                      [disabled]="saving" (click)="toggleEditando(i)">
+                <mat-icon>edit</mat-icon>
+              </button>
+            }
+          </div>
+
+          @if (editandoIndex === i) {
+            <div class="item-edit">
+              @if (item.saboresIds.length > 0) {
+                <div class="edit-section">
+                  <span class="edit-label">Sabores</span>
+                  @for (_ of item.saboresIds; track $index; let si = $index) {
+                    <div class="sabor-slot">
+                      <span class="slot-label">{{ si + 1 }}.</span>
+                      <mat-chip-listbox
+                        [ngModel]="item.saboresIds[si]"
+                        (ngModelChange)="setSaborSlot(i, si, $event)"
+                        [disabled]="saving">
+                        @for (sabor of sabores; track sabor.id) {
+                          <mat-chip-option [value]="sabor.id" color="primary">{{ sabor.nome }}</mat-chip-option>
+                        }
+                      </mat-chip-listbox>
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (adicionais.length > 0) {
+                <div class="edit-section">
+                  <span class="edit-label">Adicionais</span>
+                  <mat-chip-listbox
+                    [ngModel]="item.adicionaisIds"
+                    (ngModelChange)="setAdicionais(i, $event)"
+                    multiple [disabled]="saving">
+                    @for (adicional of adicionais; track adicional.id) {
+                      <mat-chip-option [value]="adicional.id" color="primary">{{ adicional.nome }}</mat-chip-option>
+                    }
+                  </mat-chip-listbox>
+                </div>
+              }
+
+              <div class="edit-ok-row">
+                <button class="ok-btn" (click)="toggleEditando(i)">
+                  <mat-icon>check</mat-icon>
+                  OK
+                </button>
+              </div>
+            </div>
+          }
+
+        </div>
+      }
+
+      <div class="lista-total">
+        <span>Total</span>
+        <span class="total-valor">{{ formatPreco(total) }}</span>
+      </div>
+    </div>
+
+    <button mat-button color="primary" class="add-item-btn" (click)="abrirAdicionarItem()" [disabled]="saving">
+      <mat-icon>add_circle_outline</mat-icon>
+      Adicionar item
+    </button>
+
+    @if (pedido.pago) {
+      <div class="pagamento-info">
+
+        <div class="calculos-row">
+          <span class="calculo-op">+</span>
+          <div class="calculo-item campo">
+            <span class="calculo-label">Doação</span>
+            <div class="calculo-input-wrap">
+              <span class="calculo-prefix">R$</span>
+              <input class="calculo-input" type="number" min="0" step="0.01"
+                     [(ngModel)]="doacao" [disabled]="saving"
+                     (blur)="doacao = doacao != null ? +doacao.toFixed(2) : null">
+            </div>
+          </div>
+          <span class="calculo-op">−</span>
+          <div class="calculo-item">
+            <span class="calculo-label">Pago anteriormente</span>
+            <span class="calculo-valor">{{ formatPreco(pedido.valorPago ?? 0) }}</span>
+          </div>
+          <span class="calculo-op">=</span>
+          <div class="calculo-item destaque">
+            <span class="calculo-label">Total a pagar</span>
+            <span class="calculo-valor">{{ formatPreco(totalAPagar) }}</span>
+          </div>
+        </div>
+
+        <div class="pagamento-campos">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Valor pago (R$)</mat-label>
+            <mat-icon matPrefix>payments</mat-icon>
+            <input matInput type="number" min="0" step="0.01" [(ngModel)]="valorPago" [disabled]="saving">
+          </mat-form-field>
+
+          @if (saldo !== null) {
+            <div class="saldo-row" [class.troco]="saldo >= 0" [class.a-pagar]="saldo < 0">
+              <mat-icon>{{ saldo >= 0 ? 'price_check' : 'money_off' }}</mat-icon>
+              <span>{{ formatPreco(saldo < 0 ? -saldo : saldo) }}</span>
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+    @if (erro) {
+      <div class="erro-msg">
+        <mat-icon>error_outline</mat-icon>
+        {{ erro }}
+      </div>
+    }
+
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="fechar()" [disabled]="saving">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="salvar()" [disabled]="!canSalvar">
+    @if (saving) {
+      <mat-spinner diameter="18"></mat-spinner>
+    } @else {
+      <mat-icon>save</mat-icon>
+    }
+    Salvar
+  </button>
+</mat-dialog-actions>

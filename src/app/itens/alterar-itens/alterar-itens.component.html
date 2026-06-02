@@ -2,7 +2,7 @@
   <div class="page-header">
     <h1>
       <mat-icon>inventory_2</mat-icon>
-      Alterar Itens Disponíveis
+      Configurações
     </h1>
     <button mat-stroked-button (click)="voltar()">
       <mat-icon>arrow_back</mat-icon>
@@ -21,6 +21,89 @@
       <ng-container *ngTemplateOutlet="blocoCard; context: { config }"></ng-container>
     }
   </div>
+
+  <!-- ── Permissões por perfil ──────────────────────────────── -->
+  <mat-card class="permissoes-card">
+    <div class="card-header">
+      <mat-icon>security</mat-icon>
+      <h2>Permissões por Perfil</h2>
+    </div>
+
+    @if (erroPermissoes) {
+      <div class="erro-msg permissoes-erro">
+        <mat-icon>error_outline</mat-icon>
+        {{ erroPermissoes }}
+      </div>
+    }
+
+    <div class="permissoes-table-wrap">
+      <table class="permissoes-table">
+        <thead>
+          <tr>
+            <th class="col-perfil">Perfil</th>
+            @for (f of funcionalidades; track f.chave) {
+              <th class="col-func">{{ f.label }}</th>
+            }
+            <th class="col-escopo">Barracas</th>
+            <th class="col-acao"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of perfis; track p.id) {
+            <tr [class.gerencia-row]="isTI(p.nome)">
+              <td>
+                <div class="cell-perfil">
+                  <span class="perfil-nome">{{ p.nome }}</span>
+                  @if (isTI(p.nome)) {
+                    <mat-icon class="lock-icon" matTooltip="Acesso total — não editável">lock</mat-icon>
+                  }
+                </div>
+              </td>
+              @for (f of funcionalidades; track f.chave) {
+                <td class="cell-check">
+                  <mat-checkbox
+                    [checked]="isTI(p.nome) || temPermissaoPerfil(p.id, f.chave)"
+                    [disabled]="isTI(p.nome) || savingPerfilId === p.id"
+                    (change)="togglePermissao(p.id, f.chave)">
+                  </mat-checkbox>
+                </td>
+              }
+              <td class="cell-escopo">
+                @if (isTI(p.nome)) {
+                  <span class="escopo-badge">Todas</span>
+                } @else {
+                  <select class="escopo-select"
+                          [(ngModel)]="editEscopo[p.id]"
+                          [disabled]="savingPerfilId === p.id">
+                    <option value="propria">Só própria</option>
+                    <option value="todas">Todas</option>
+                  </select>
+                }
+              </td>
+              <td class="cell-acao">
+                @if (!isTI(p.nome)) {
+                  @if (sucessoPerfilId === p.id) {
+                    <mat-icon class="salvo-icon">check_circle</mat-icon>
+                  } @else {
+                    <button mat-stroked-button color="primary"
+                            (click)="salvarPermissoes(p.id)"
+                            [disabled]="savingPerfilId !== null">
+                      @if (savingPerfilId === p.id) {
+                        <mat-spinner diameter="16"></mat-spinner>
+                      } @else {
+                        <mat-icon>save</mat-icon>
+                      }
+                      Salvar
+                    </button>
+                  }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </mat-card>
 
 </div>
 

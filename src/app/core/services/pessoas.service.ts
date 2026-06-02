@@ -6,7 +6,7 @@ import {
 import { Observable } from 'rxjs';
 import { Pessoa } from '../models/pessoa.model';
 import { ItemBase } from '../models/item.model';
-import { PerfilCompleto, Funcionalidade } from '../models/perfil.model';
+import { PerfilCompleto, Funcionalidade, EscopoBarraca } from '../models/perfil.model';
 
 @Injectable({ providedIn: 'root' })
 export class PessoasService {
@@ -27,8 +27,8 @@ export class PessoasService {
     await updateDoc(doc(db, 'pessoas', id), dados);
   }
 
-  async updatePermissoes(perfilId: string, permissoes: Funcionalidade[]): Promise<void> {
-    await updateDoc(doc(db, 'perfis', perfilId), { permissoes });
+  async updatePermissoes(perfilId: string, permissoes: Funcionalidade[], escopo: EscopoBarraca): Promise<void> {
+    await updateDoc(doc(db, 'perfis', perfilId), { permissoes, escopo });
   }
 
   private getColecao<T extends { id: string }>(nome: string): Observable<T[]> {

@@ -3,7 +3,7 @@ import { auth, db } from '../config/firebase.config';
 import { signInWithEmailAndPassword, signOut, User, onAuthStateChanged } from 'firebase/auth';
 import { getDoc, doc, collection, query, where, getDocs } from 'firebase/firestore';
 import { BehaviorSubject, Observable, filter, firstValueFrom } from 'rxjs';
-import { PerfilCompleto, Funcionalidade, isGerencia, FUNCIONALIDADES } from '../models/perfil.model';
+import { PerfilCompleto, Funcionalidade, EscopoBarraca, isTI, FUNCIONALIDADES } from '../models/perfil.model';
 
 @Injectable({
   providedIn: 'root'
@@ -56,7 +56,7 @@ export class AuthService {
   temPermissao(funcionalidade: Funcionalidade): boolean {
     const perfil = this.perfilSubject.value;
     if (!perfil) return false;
-    if (isGerencia(perfil.nome)) return true;
+    if (isTI(perfil.nome)) return true;
     return (perfil.permissoes ?? []).includes(funcionalidade);
   }
 
@@ -79,11 +79,12 @@ export class AuthService {
 
       const dados = perfilSnap.data();
       const nome = dados['nome'] as string;
-      const permissoes = isGerencia(nome)
+      const escopo = (dados['escopo'] ?? 'propria') as EscopoBarraca;
+      const permissoes = isTI(nome)
         ? FUNCIONALIDADES.map(f => f.chave)
         : (dados['permissoes'] ?? []) as Funcionalidade[];
 
-      this.perfilSubject.next({ id: perfilSnap.id, nome, permissoes });
+      this.perfilSubject.next({ id: perfilSnap.id, nome, permissoes, escopo });
     } catch {
       this.perfilSubject.next(null);
     }

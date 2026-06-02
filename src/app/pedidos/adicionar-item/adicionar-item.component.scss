@@ -1,0 +1,64 @@
+@use '../../../variables' as *;
+@use '../../../mixins' as *;
+
+h2[mat-dialog-title] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  mat-icon { color: var(--color-primary); }
+}
+
+mat-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px !important;
+  min-width: 440px;
+  max-width: 520px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.loading-state {
+  @include flex-center;
+  padding: 40px 0;
+}
+
+.item-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .section-label {
+    font-size: 11px;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+}
+
+.sabor-slot {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  .slot-label {
+    font-size: 13px;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-primary);
+    min-width: 18px;
+    padding-top: 5px;
+    flex-shrink: 0;
+  }
+
+  mat-chip-listbox { flex: 1; }
+}
+
+.chip-preco {
+  font-size: 11px;
+  margin-left: 4px;
+  opacity: 0.75;
+}
+
+.qtd-field { width: 120px; }

@@ -9,9 +9,12 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ItensService } from '../../core/services/itens.service';
+import { PessoasService } from '../../core/services/pessoas.service';
 import { ItemBase, ColecaoItens } from '../../core/models/item.model';
+import { PerfilCompleto, Funcionalidade, FUNCIONALIDADES, isTI, EscopoBarraca } from '../../core/models/perfil.model';
 import { formatPreco } from '../../core/utils/formatters';
 
 interface BlocoState {
@@ -47,7 +50,7 @@ interface BlocoConfig {
     FormsModule, NgTemplateOutlet,
     MatCardModule, MatButtonModule, MatIconModule,
     MatFormFieldModule, MatInputModule,
-    MatProgressSpinnerModule, MatTooltipModule
+    MatProgressSpinnerModule, MatTooltipModule, MatCheckboxModule,
   ],
   templateUrl: './alterar-itens.component.html',
   styleUrl: './alterar-itens.component.scss'
@@ -55,6 +58,7 @@ interface BlocoConfig {
 export class AlterarItensComponent implements OnInit {
   private router = inject(Router);
   private itensService = inject(ItensService);
+  private pessoasService = inject(PessoasService);
   private destroyRef = inject(DestroyRef);
 
   readonly blocosConfig: BlocoConfig[] = [
@@ -67,7 +71,8 @@ export class AlterarItensComponent implements OnInit {
 
   readonly blocosLinha1 = this.blocosConfig.slice(0, 2);
   readonly blocosLinha2 = this.blocosConfig.slice(2);
-
+  readonly funcionalidades = FUNCIONALIDADES;
+  readonly isTI = isTI;
   readonly formatPreco = formatPreco;
 
   blocos: Record<string, BlocoState> = {
@@ -77,6 +82,14 @@ export class AlterarItensComponent implements OnInit {
     perfis:     this.novoBloco(),
     barracas:   this.novoBloco(),
   };
+
+  // Permissões por perfil
+  perfis: PerfilCompleto[] = [];
+  editPermissoes = new Map<string, Set<Funcionalidade>>();
+  editEscopo: Record<string, EscopoBarraca> = {};
+  savingPerfilId: string | null = null;
+  erroPermissoes = '';
+  sucessoPerfilId: string | null = null;
 
   private novoBloco(): BlocoState {
     return { itens: [], loading: true, novoNome: '', novoPreco: null, novoQtdSabores: null, saving: false, editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, deletingId: null, erro: '' };
@@ -91,6 +104,20 @@ export class AlterarItensComponent implements OnInit {
           error: () => Object.assign(this.blocos[col], { loading: false, erro: 'Erro ao carregar dados.' })
         });
     });
+
+    this.pessoasService.getPerfis()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(perfis => {
+        this.perfis = perfis;
+        perfis.forEach(p => {
+          if (!this.editPermissoes.has(p.id)) {
+            this.editPermissoes.set(p.id, new Set(p.permissoes ?? []));
+          }
+          if (!(p.id in this.editEscopo)) {
+            this.editEscopo[p.id] = p.escopo ?? 'propria';
+          }
+        });
+      });
   }
 
   async adicionar(col: ColecaoItens): Promise<void> {
@@ -149,6 +176,34 @@ export class AlterarItensComponent implements OnInit {
       b.erro = 'Erro ao excluir item.';
     } finally {
       b.deletingId = null;
+    }
+  }
+
+  temPermissaoPerfil(perfilId: string, chave: Funcionalidade): boolean {
+    return this.editPermissoes.get(perfilId)?.has(chave) ?? false;
+  }
+
+  togglePermissao(perfilId: string, chave: Funcionalidade): void {
+    const set = this.editPermissoes.get(perfilId);
+    if (!set) return;
+    if (set.has(chave)) set.delete(chave); else set.add(chave);
+  }
+
+  async salvarPermissoes(perfilId: string): Promise<void> {
+    if (this.savingPerfilId) return;
+    this.savingPerfilId = perfilId;
+    this.erroPermissoes = '';
+    this.sucessoPerfilId = null;
+    try {
+      const permissoes = Array.from(this.editPermissoes.get(perfilId) ?? []);
+      const escopo = this.editEscopo[perfilId] ?? 'propria';
+      await this.pessoasService.updatePermissoes(perfilId, permissoes, escopo);
+      this.sucessoPerfilId = perfilId;
+      setTimeout(() => (this.sucessoPerfilId = null), 3000);
+    } catch {
+      this.erroPermissoes = 'Erro ao salvar permissões.';
+    } finally {
+      this.savingPerfilId = null;
     }
   }
 
