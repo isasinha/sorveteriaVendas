@@ -14,7 +14,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PessoasService } from '../../core/services/pessoas.service';
 import { Pessoa } from '../../core/models/pessoa.model';
 import { ItemBase } from '../../core/models/item.model';
-import { PerfilCompleto, FUNCIONALIDADES, isTI } from '../../core/models/perfil.model';
+import { PerfilCompleto, FUNCIONALIDADES, FILTROS_CONSULTAR, FiltroConsultar, isTI } from '../../core/models/perfil.model';
 
 @Component({
   selector: 'app-controle-perfil',
@@ -33,6 +33,7 @@ export class ControlePerfilComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   readonly funcionalidades = FUNCIONALIDADES;
+  readonly filtrosConsultar = FILTROS_CONSULTAR;
   readonly isTI = isTI;
 
   pessoas: Pessoa[] = [];
@@ -117,6 +118,12 @@ export class ControlePerfilComponent implements OnInit {
     } finally {
       this.saving = false;
     }
+  }
+
+  isFiltroVisivel(perfil: PerfilCompleto, filtro: FiltroConsultar): boolean {
+    if (isTI(perfil.nome)) return true;
+    if (!perfil.filtrosVisiveis) return true;
+    return perfil.filtrosVisiveis.includes(filtro);
   }
 
   voltar(): void {

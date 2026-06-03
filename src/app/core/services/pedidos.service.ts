@@ -98,7 +98,7 @@ export class PedidosService {
       total: changes.total,
       doacao: (changes.doacao && changes.doacao > 0) ? changes.doacao : deleteField(),
       valorPago: (changes.valorPago != null && changes.valorPago > 0) ? changes.valorPago : deleteField(),
-      ...(changes.pago === false ? { pago: false } : {}),
+      ...(changes.pago != null ? { pago: changes.pago } : {}),
     });
   }
 

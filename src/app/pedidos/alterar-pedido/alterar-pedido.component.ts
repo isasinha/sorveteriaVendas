@@ -12,6 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ItensService } from '../../core/services/itens.service';
 import { PedidosService } from '../../core/services/pedidos.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ItemBase } from '../../core/models/item.model';
 import { ItemPedido, Pedido, resumoItemPedido } from '../../core/models/pedido.model';
 import { formatPreco } from '../../core/utils/formatters';
@@ -35,8 +36,10 @@ export class AlterarPedidoComponent implements OnInit {
   private dialog = inject(MatDialog);
   private itensService = inject(ItensService);
   private pedidosService = inject(PedidosService);
+  private authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
 
+  readonly isFila = this.authService.getPerfil()?.nome?.trim().toLowerCase() === 'fila';
   readonly formatPreco = formatPreco;
   readonly resumoItemPedido = resumoItemPedido;
 
@@ -152,7 +155,7 @@ export class AlterarPedidoComponent implements OnInit {
         total: this.total,
         doacao: doacaoFinal,
         valorPago: valorPagoFinal,
-        ...(voltarParaAPagar ? { pago: false } : {}),
+        ...(voltarParaAPagar ? { pago: false } : novoValorPagoInformado ? { pago: true } : {}),
       });
       this.dialogRef.close(true);
     } catch {

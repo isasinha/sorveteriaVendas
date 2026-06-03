@@ -22,17 +22,17 @@
     }
   </div>
 
-  <!-- ── Permissões por perfil ──────────────────────────────── -->
+  <!-- ── Permissões e Filtros por Perfil ──────────────────────── -->
   <mat-card class="permissoes-card">
     <div class="card-header">
       <mat-icon>security</mat-icon>
       <h2>Permissões por Perfil</h2>
     </div>
 
-    @if (erroPermissoes) {
+    @if (erroTabela) {
       <div class="erro-msg permissoes-erro">
         <mat-icon>error_outline</mat-icon>
-        {{ erroPermissoes }}
+        {{ erroTabela }}
       </div>
     }
 
@@ -40,12 +40,17 @@
       <table class="permissoes-table">
         <thead>
           <tr>
-            <th class="col-perfil">Perfil</th>
+            <th class="col-perfil" rowspan="2">Perfil</th>
             @for (f of funcionalidades; track f.chave) {
+              <th class="col-func" rowspan="2">{{ f.label }}</th>
+            }
+            <th class="col-escopo" rowspan="2">Barracas</th>
+            <th class="col-group" [attr.colspan]="filtrosConsultar.length">Filtros de Consulta</th>
+          </tr>
+          <tr>
+            @for (f of filtrosConsultar; track f.chave) {
               <th class="col-func">{{ f.label }}</th>
             }
-            <th class="col-escopo">Barracas</th>
-            <th class="col-acao"></th>
           </tr>
         </thead>
         <tbody>
@@ -63,7 +68,7 @@
                 <td class="cell-check">
                   <mat-checkbox
                     [checked]="isTI(p.nome) || temPermissaoPerfil(p.id, f.chave)"
-                    [disabled]="isTI(p.nome) || savingPerfilId === p.id"
+                    [disabled]="isTI(p.nome) || savingTabela"
                     (change)="togglePermissao(p.id, f.chave)">
                   </mat-checkbox>
                 </td>
@@ -74,34 +79,45 @@
                 } @else {
                   <select class="escopo-select"
                           [(ngModel)]="editEscopo[p.id]"
-                          [disabled]="savingPerfilId === p.id">
+                          [disabled]="savingTabela">
                     <option value="propria">Só própria</option>
                     <option value="todas">Todas</option>
                   </select>
                 }
               </td>
-              <td class="cell-acao">
-                @if (!isTI(p.nome)) {
-                  @if (sucessoPerfilId === p.id) {
-                    <mat-icon class="salvo-icon">check_circle</mat-icon>
-                  } @else {
-                    <button mat-stroked-button color="primary"
-                            (click)="salvarPermissoes(p.id)"
-                            [disabled]="savingPerfilId !== null">
-                      @if (savingPerfilId === p.id) {
-                        <mat-spinner diameter="16"></mat-spinner>
-                      } @else {
-                        <mat-icon>save</mat-icon>
-                      }
-                      Salvar
-                    </button>
-                  }
-                }
-              </td>
+              @for (f of filtrosConsultar; track f.chave) {
+                <td class="cell-check cell-filtro">
+                  <mat-checkbox
+                    [checked]="isTI(p.nome) || isFiltroVisivelEdit(p.id, f.chave)"
+                    [disabled]="isTI(p.nome) || savingTabela"
+                    (change)="toggleFiltroEdit(p.id, f.chave)">
+                  </mat-checkbox>
+                </td>
+              }
             </tr>
           }
         </tbody>
       </table>
+    </div>
+
+    <div class="tabela-footer">
+      @if (sucessoTabela) {
+        <div class="sucesso-msg">
+          <mat-icon>check_circle</mat-icon>
+          Alterações salvas com sucesso!
+        </div>
+      }
+      <button mat-flat-button color="primary" class="btn-salvar-tabela"
+              (click)="salvarTudo()" [disabled]="savingTabela">
+        <span class="btn-content">
+          @if (savingTabela) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <mat-icon>save</mat-icon>
+          }
+          Salvar Alterações
+        </span>
+      </button>
     </div>
   </mat-card>
 

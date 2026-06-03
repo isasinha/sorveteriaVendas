@@ -14,7 +14,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ItensService } from '../../core/services/itens.service';
 import { PessoasService } from '../../core/services/pessoas.service';
 import { ItemBase, ColecaoItens } from '../../core/models/item.model';
-import { PerfilCompleto, Funcionalidade, FUNCIONALIDADES, isTI, EscopoBarraca } from '../../core/models/perfil.model';
+import { PerfilCompleto, Funcionalidade, FUNCIONALIDADES, FiltroConsultar, FILTROS_CONSULTAR, isTI, EscopoBarraca } from '../../core/models/perfil.model';
 import { formatPreco } from '../../core/utils/formatters';
 
 interface BlocoState {
@@ -72,6 +72,7 @@ export class AlterarItensComponent implements OnInit {
   readonly blocosLinha1 = this.blocosConfig.slice(0, 2);
   readonly blocosLinha2 = this.blocosConfig.slice(2);
   readonly funcionalidades = FUNCIONALIDADES;
+  readonly filtrosConsultar = FILTROS_CONSULTAR;
   readonly isTI = isTI;
   readonly formatPreco = formatPreco;
 
@@ -87,9 +88,14 @@ export class AlterarItensComponent implements OnInit {
   perfis: PerfilCompleto[] = [];
   editPermissoes = new Map<string, Set<Funcionalidade>>();
   editEscopo: Record<string, EscopoBarraca> = {};
-  savingPerfilId: string | null = null;
-  erroPermissoes = '';
-  sucessoPerfilId: string | null = null;
+
+  // Filtros de consulta por perfil
+  editFiltros: Record<string, Set<FiltroConsultar>> = {};
+
+  // Estado único para salvar a tabela inteira
+  savingTabela = false;
+  sucessoTabela = false;
+  erroTabela = '';
 
   private novoBloco(): BlocoState {
     return { itens: [], loading: true, novoNome: '', novoPreco: null, novoQtdSabores: null, saving: false, editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, deletingId: null, erro: '' };
@@ -115,6 +121,10 @@ export class AlterarItensComponent implements OnInit {
           }
           if (!(p.id in this.editEscopo)) {
             this.editEscopo[p.id] = p.escopo ?? 'propria';
+          }
+          if (!(p.id in this.editFiltros)) {
+            const todos = FILTROS_CONSULTAR.map(f => f.chave);
+            this.editFiltros[p.id] = new Set(p.filtrosVisiveis ?? todos);
           }
         });
       });
@@ -179,6 +189,16 @@ export class AlterarItensComponent implements OnInit {
     }
   }
 
+  isFiltroVisivelEdit(perfilId: string, filtro: FiltroConsultar): boolean {
+    return this.editFiltros[perfilId]?.has(filtro) ?? true;
+  }
+
+  toggleFiltroEdit(perfilId: string, filtro: FiltroConsultar): void {
+    const set = this.editFiltros[perfilId];
+    if (!set) return;
+    if (set.has(filtro)) set.delete(filtro); else set.add(filtro);
+  }
+
   temPermissaoPerfil(perfilId: string, chave: Funcionalidade): boolean {
     return this.editPermissoes.get(perfilId)?.has(chave) ?? false;
   }
@@ -189,21 +209,28 @@ export class AlterarItensComponent implements OnInit {
     if (set.has(chave)) set.delete(chave); else set.add(chave);
   }
 
-  async salvarPermissoes(perfilId: string): Promise<void> {
-    if (this.savingPerfilId) return;
-    this.savingPerfilId = perfilId;
-    this.erroPermissoes = '';
-    this.sucessoPerfilId = null;
+  async salvarTudo(): Promise<void> {
+    if (this.savingTabela) return;
+    this.savingTabela = true;
+    this.sucessoTabela = false;
+    this.erroTabela = '';
     try {
-      const permissoes = Array.from(this.editPermissoes.get(perfilId) ?? []);
-      const escopo = this.editEscopo[perfilId] ?? 'propria';
-      await this.pessoasService.updatePermissoes(perfilId, permissoes, escopo);
-      this.sucessoPerfilId = perfilId;
-      setTimeout(() => (this.sucessoPerfilId = null), 3000);
+      const editaveis = this.perfis.filter(p => !isTI(p.nome));
+      await Promise.all(editaveis.map(async p => {
+        const permissoes = Array.from(this.editPermissoes.get(p.id) ?? []);
+        const escopo = this.editEscopo[p.id] ?? 'propria';
+        await this.pessoasService.updatePermissoes(p.id, permissoes, escopo);
+
+        const selecionados = Array.from(this.editFiltros[p.id] ?? []) as FiltroConsultar[];
+        const toSave = selecionados.length === FILTROS_CONSULTAR.length ? null : selecionados;
+        await this.pessoasService.updateFiltrosVisiveis(p.id, toSave);
+      }));
+      this.sucessoTabela = true;
+      setTimeout(() => (this.sucessoTabela = false), 3000);
     } catch {
-      this.erroPermissoes = 'Erro ao salvar permissões.';
+      this.erroTabela = 'Erro ao salvar alterações.';
     } finally {
-      this.savingPerfilId = null;
+      this.savingTabela = false;
     }
   }
 

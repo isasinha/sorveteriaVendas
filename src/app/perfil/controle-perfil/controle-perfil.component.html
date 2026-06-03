@@ -164,22 +164,28 @@
 
     </div>
 
-    <!-- ── Permissões por Perfil (guia) ────────────────────────── -->
+    <!-- ── Permissões e Filtros por Perfil ────────────────────────── -->
     <mat-card class="permissoes-card">
       <div class="card-header">
         <mat-icon>security</mat-icon>
-        <h2>Permissões por Perfil</h2>
+        <h2>Configurações por Perfil</h2>
       </div>
-      <p class="permissoes-info">Para editar permissões, acesse <strong>Configurações</strong>.</p>
+      <p class="permissoes-info">Permissões e filtros são gerenciados em <strong>Configurações</strong>. Perfil TI sempre vê tudo.</p>
       <div class="permissoes-table-wrap">
         <table class="permissoes-table">
           <thead>
             <tr>
-              <th class="col-perfil">Perfil</th>
+              <th class="col-perfil" rowspan="2">Perfil</th>
               @for (f of funcionalidades; track f.chave) {
+                <th class="col-func" rowspan="2">{{ f.label }}</th>
+              }
+              <th class="col-escopo" rowspan="2">Visibilidade</th>
+              <th class="col-group" [attr.colspan]="filtrosConsultar.length">Filtros de Consulta</th>
+            </tr>
+            <tr>
+              @for (f of filtrosConsultar; track f.chave) {
                 <th class="col-func">{{ f.label }}</th>
               }
-              <th class="col-escopo">Visibilidade</th>
             </tr>
           </thead>
           <tbody>
@@ -203,9 +209,17 @@
                 }
                 <td class="cell-escopo">
                   <span class="escopo-badge" [class.escopo-todas]="isTI(p.nome) || p.escopo === 'todas'">
-                    {{ isTI(p.nome) || p.escopo === 'todas' ? 'Todas' : 'Só própria barraca' }}
+                    {{ isTI(p.nome) || p.escopo === 'todas' ? 'Todas' : 'Só própria' }}
                   </span>
                 </td>
+                @for (f of filtrosConsultar; track f.chave) {
+                  <td class="cell-check cell-filtro">
+                    <mat-checkbox
+                      [checked]="isFiltroVisivel(p, f.chave)"
+                      [disabled]="true">
+                    </mat-checkbox>
+                  </td>
+                }
               </tr>
             }
           </tbody>

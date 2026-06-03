@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { db } from '../config/firebase.config';
 import {
-  collection, query, orderBy, onSnapshot, updateDoc, doc
+  collection, query, orderBy, onSnapshot, updateDoc, doc, deleteField
 } from 'firebase/firestore';
 import { Observable } from 'rxjs';
 import { Pessoa } from '../models/pessoa.model';
 import { ItemBase } from '../models/item.model';
-import { PerfilCompleto, Funcionalidade, EscopoBarraca } from '../models/perfil.model';
+import { PerfilCompleto, Funcionalidade, EscopoBarraca, FiltroConsultar } from '../models/perfil.model';
 
 @Injectable({ providedIn: 'root' })
 export class PessoasService {
@@ -29,6 +29,12 @@ export class PessoasService {
 
   async updatePermissoes(perfilId: string, permissoes: Funcionalidade[], escopo: EscopoBarraca): Promise<void> {
     await updateDoc(doc(db, 'perfis', perfilId), { permissoes, escopo });
+  }
+
+  async updateFiltrosVisiveis(perfilId: string, filtros: FiltroConsultar[] | null): Promise<void> {
+    await updateDoc(doc(db, 'perfis', perfilId), {
+      filtrosVisiveis: filtros ?? deleteField(),
+    });
   }
 
   private getColecao<T extends { id: string }>(nome: string): Observable<T[]> {

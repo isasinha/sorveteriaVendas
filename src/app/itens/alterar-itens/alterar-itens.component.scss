@@ -297,6 +297,21 @@
 .col-perfil { text-align: left; min-width: 130px; }
 .col-func   { min-width: 110px; }
 .col-escopo { min-width: 120px; }
+
+.col-group {
+  background-color: #f3e5f5;
+  color: #6a1b9a;
+  font-weight: var(--font-weight-semibold);
+  border-left: 2px solid #ce93d8;
+}
+
+.cell-filtro {
+  border-left: 1px solid #f3e5f5;
+
+  &:first-of-type {
+    border-left: 2px solid #ce93d8;
+  }
+}
 .col-acao   { min-width: 100px; }
 
 .cell-perfil {
@@ -357,4 +372,20 @@
   font-size: 22px;
   width: 22px;
   height: 22px;
+}
+
+.tabela-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.btn-salvar-tabela {
+  height: 46px;
+  min-width: 200px;
+  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
 }

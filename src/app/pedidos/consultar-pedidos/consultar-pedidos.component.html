@@ -12,15 +12,11 @@
   </div>
 
   <div class="filtros no-print">
-    <button mat-flat-button [class.ativo]="filtro === 'todos'" (click)="filtro = 'todos'">Todos</button>
-    <button mat-flat-button [class.ativo]="filtro === 'atrasados'" (click)="filtro = 'atrasados'">
-      <mat-icon>warning</mat-icon>
-      Atrasados
-    </button>
-    <button mat-flat-button [class.ativo]="filtro === 'nao-entregues'" (click)="filtro = 'nao-entregues'">Não entregues</button>
-    <button mat-flat-button [class.ativo]="filtro === 'concluidos'" (click)="filtro = 'concluidos'">Concluídos</button>
-    <button mat-flat-button [class.ativo]="filtro === 'nao-pagos'" (click)="filtro = 'nao-pagos'">Não pagos</button>
-    <button mat-flat-button [class.ativo]="filtro === 'cancelados'" (click)="filtro = 'cancelados'">Cancelados</button>
+    @for (f of FILTROS_CONSULTAR; track f.chave) {
+      @if (filtrosDisponiveis.includes(f.chave)) {
+        <button mat-flat-button [class.ativo]="filtro === f.chave" (click)="filtro = f.chave">{{ f.label }}</button>
+      }
+    }
   </div>
 
   @if (pedidosFiltrados.length === 0) {
@@ -35,6 +31,7 @@
       @let status = getStatus(pedido);
       @let statusP = getStatusPedido(pedido);
       <div class="card" [class.alerta]="status === 'alerta'" [class.critico]="status === 'critico'" [class.entregue]="pedido.entregue" [class.cancelado]="pedido.cancelado" [class.nao-retirado]="pedido.naoRetirado"
+           [class.no-click]="isFila"
            (click)="abrirDetalhe(pedido)" role="button" tabindex="0" (keydown.enter)="abrirDetalhe(pedido)">
 
         <div class="card-topo">
@@ -64,44 +61,57 @@
 
         <ul class="itens">
           @for (item of pedido.itens; track $index) {
-            <li [class.item-entregue]="item.entregue">
+            @let qtdEntregue = item.quantidadeEntregue ?? (item.entregue ? item.quantidade : 0);
+            @let parcial = qtdEntregue > 0 && qtdEntregue < item.quantidade;
+            <li [class.item-entregue]="item.entregue" [class.item-parcial]="parcial">
               @if (item.entregue) {
                 <mat-icon class="check-item">check_circle</mat-icon>
               }
               {{ (item.quantidade > 1 ? item.quantidade + '× ' : '') + resumoItemPedido(item) }}
+              @if (parcial) {
+                - <span class="check-parcial"> Entregue {{ qtdEntregue }}</span>
+              }
             </li>
           }
         </ul>
 
         <div class="card-actions" (click)="$event.stopPropagation()">
           @if (!pedido.naoRetirado && !pedido.cancelado) {
-            <button class="btn-acao btn-entregar"
-                    [disabled]="!podeEntregar(pedido) || entregandoId !== null"
-                    (click)="entregar(pedido)">
-              @if (entregandoId === pedido.id) {
-                <mat-icon class="spin">sync</mat-icon>
-              } @else {
-                <mat-icon>check_circle</mat-icon>
-              }
-              Entregar
-            </button>
-            <button class="btn-acao btn-azul btn-alterar" matTooltip="Alterar pedido"
-                    [disabled]="!podeAlterar(pedido)"
-                    (click)="editarPedido(pedido)">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button class="btn-acao btn-vermelho btn-cancelar"
-                    matTooltip="Cancelar pedido"
-                    [disabled]="!podeCancelar(pedido)"
-                    (click)="cancelar(pedido)">
-              <mat-icon>close</mat-icon>
-            </button>
-            <button class="btn-acao btn-azul btn-parcial"
-                    [disabled]="!podeEntregar(pedido)"
-                    (click)="abrirDetalhe(pedido)">
-              <mat-icon>splitscreen</mat-icon>
-              Entrega parcial
-            </button>
+            @if (!isFila) {
+              <button class="btn-acao btn-entregar"
+                      [disabled]="!podeEntregar(pedido) || entregandoId !== null"
+                      (click)="entregar(pedido)">
+                @if (entregandoId === pedido.id) {
+                  <mat-icon class="spin">sync</mat-icon>
+                } @else {
+                  <mat-icon>check_circle</mat-icon>
+                }
+                Entregar
+              </button>
+            }
+            @if (!isMontagem) {
+              <button class="btn-acao btn-azul btn-alterar" matTooltip="Alterar pedido"
+                      [disabled]="!podeAlterar(pedido)"
+                      (click)="editarPedido(pedido)">
+                <mat-icon>edit</mat-icon>
+              </button>
+            }
+            @if (!isMontagem) {
+              <button class="btn-acao btn-vermelho btn-cancelar"
+                      matTooltip="Cancelar pedido"
+                      [disabled]="!podeCancelar(pedido)"
+                      (click)="cancelar(pedido)">
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+            @if (!isFila) {
+              <button class="btn-acao btn-azul btn-parcial"
+                      [disabled]="!podeEntregar(pedido)"
+                      (click)="abrirDetalhe(pedido, true)">
+                <mat-icon>splitscreen</mat-icon>
+                Entrega parcial
+              </button>
+            }
           }
         </div>
 

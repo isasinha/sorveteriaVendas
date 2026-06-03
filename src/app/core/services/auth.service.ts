@@ -3,7 +3,7 @@ import { auth, db } from '../config/firebase.config';
 import { signInWithEmailAndPassword, signOut, User, onAuthStateChanged } from 'firebase/auth';
 import { getDoc, doc, collection, query, where, getDocs } from 'firebase/firestore';
 import { BehaviorSubject, Observable, filter, firstValueFrom } from 'rxjs';
-import { PerfilCompleto, Funcionalidade, EscopoBarraca, isTI, FUNCIONALIDADES } from '../models/perfil.model';
+import { PerfilCompleto, Funcionalidade, EscopoBarraca, FiltroConsultar, isTI, FUNCIONALIDADES } from '../models/perfil.model';
 
 @Injectable({
   providedIn: 'root'
@@ -83,8 +83,11 @@ export class AuthService {
       const permissoes = isTI(nome)
         ? FUNCIONALIDADES.map(f => f.chave)
         : (dados['permissoes'] ?? []) as Funcionalidade[];
+      const filtrosVisiveis = isTI(nome)
+        ? undefined
+        : (dados['filtrosVisiveis'] as FiltroConsultar[] | undefined) ?? undefined;
 
-      this.perfilSubject.next({ id: perfilSnap.id, nome, permissoes, escopo });
+      this.perfilSubject.next({ id: perfilSnap.id, nome, permissoes, escopo, filtrosVisiveis });
     } catch {
       this.perfilSubject.next(null);
     }

@@ -37,19 +37,19 @@ export interface Pedido {
   naoRetirado?: boolean;
 }
 
-export type StatusPedido = 'a-pagar' | 'em-preparo' | 'concluido' | 'cancelado' | 'nao-retirado';
+export type StatusPedido = 'a-pagar' | 'em-preparacao' | 'concluido' | 'cancelado' | 'nao-retirado';
 
 export function getStatusPedido(pedido: Pedido): StatusPedido {
   if (pedido.naoRetirado) return 'nao-retirado';
   if (pedido.cancelado)   return 'cancelado';
   if (pedido.pago && pedido.entregue) return 'concluido';
-  if (pedido.pago) return 'em-preparo';
+  if (pedido.pago) return 'em-preparacao';
   return 'a-pagar';
 }
 
 export const STATUS_LABEL: Record<StatusPedido, string> = {
   'a-pagar':      'A pagar',
-  'em-preparo':   'Em preparo',
+  'em-preparacao':   'Em preparação',
   'concluido':    'Concluído',
   'cancelado':    'Cancelado',
   'nao-retirado': 'Não retirado',
@@ -57,7 +57,7 @@ export const STATUS_LABEL: Record<StatusPedido, string> = {
 
 export const STATUS_ICON: Record<StatusPedido, string> = {
   'a-pagar':      'payments',
-  'em-preparo':   'hourglass_top',
+  'em-preparacao':   'hourglass_top',
   'concluido':    'check_circle',
   'cancelado':    'cancel',
   'nao-retirado': 'inventory_2',

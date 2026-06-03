@@ -8,15 +8,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PedidosService } from '../../core/services/pedidos.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Pedido, STATUS_ICON, STATUS_LABEL, getStatusPedido, resumoItemPedido } from '../../core/models/pedido.model';
 import { DetalhePedidoComponent } from '../detalhe-pedido/detalhe-pedido.component';
 import { PagamentoComponent } from '../pagamento/pagamento.component';
 import { AlterarPedidoComponent } from '../alterar-pedido/alterar-pedido.component';
 import { ConfirmacaoDialogComponent } from '../../shared/confirmacao-dialog/confirmacao-dialog.component';
+import { FiltroConsultar, FILTROS_CONSULTAR } from '../../core/models/perfil.model';
 import { formatData, formatHora } from '../../core/utils/formatters';
 
 type Status = 'normal' | 'alerta' | 'critico';
-type Filtro = 'todos' | 'atrasados' | 'nao-entregues' | 'concluidos' | 'nao-pagos' | 'cancelados';
 
 @Component({
   selector: 'app-consultar-pedidos',
@@ -29,7 +30,13 @@ export class ConsultarPedidosComponent implements OnInit {
   private router = inject(Router);
   private dialog = inject(MatDialog);
   private pedidosService = inject(PedidosService);
+  private authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
+
+  readonly filtrosDisponiveis: FiltroConsultar[] = this.authService.getPerfil()?.filtrosVisiveis ?? FILTROS_CONSULTAR.map(f => f.chave);
+  readonly FILTROS_CONSULTAR = FILTROS_CONSULTAR;
+  readonly isFila = this.authService.getPerfil()?.nome?.trim().toLowerCase() === 'fila';
+  readonly isMontagem = this.authService.getPerfil()?.nome?.trim().toLowerCase().includes('montagem') ?? false;
 
   readonly STATUS_LABEL = STATUS_LABEL;
   readonly STATUS_ICON = STATUS_ICON;
@@ -40,14 +47,13 @@ export class ConsultarPedidosComponent implements OnInit {
 
   pedidos: Pedido[] = [];
   agora = Date.now();
-  filtro: Filtro = 'todos';
+  filtro: FiltroConsultar = this.filtrosDisponiveis[0] ?? 'todos';
   entregandoId: string | null = null;
 
   get pedidosFiltrados(): Pedido[] {
     switch (this.filtro) {
       case 'cancelados':    return this.pedidos.filter(p => this.isEncerrado(p));
-      case 'atrasados':     return this.pedidos.filter(p => !this.isEncerrado(p) && !p.entregue && this.getStatus(p) !== 'normal');
-      case 'nao-entregues': return this.pedidos.filter(p => !this.isEncerrado(p) && !p.entregue);
+      case 'em-preparacao': return this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && !p.entregue);
       case 'concluidos':    return this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && p.entregue);
       case 'nao-pagos':     return this.pedidos.filter(p => !this.isEncerrado(p) && !p.pago);
       default:              return this.pedidos;
@@ -130,7 +136,8 @@ export class ConsultarPedidosComponent implements OnInit {
     });
   }
 
-  async abrirDetalhe(pedido: Pedido): Promise<void> {
+  async abrirDetalhe(pedido: Pedido, entregaParcial = false): Promise<void> {
+    if (this.isFila) return;
 
     if (getStatusPedido(pedido) === 'a-pagar') {
       this.dialog.open(PagamentoComponent, {
@@ -142,7 +149,7 @@ export class ConsultarPedidosComponent implements OnInit {
       return;
     }
     this.dialog.open(DetalhePedidoComponent, {
-      data: pedido,
+      data: { pedido, entregaParcial },
       width: '480px',
       maxHeight: '90vh',
     });

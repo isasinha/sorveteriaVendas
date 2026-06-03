@@ -31,7 +31,7 @@
             <button class="qty-btn-entrega" type="button"
                     [disabled]="item.quantidadeParaEntregar === 0"
                     (click)="item.quantidadeParaEntregar = item.quantidadeParaEntregar - 1">−</button>
-            <span class="qty-entrega-val">{{ item.quantidadeParaEntregar }}</span>
+            <span class="qty-entrega-val">{{ item.quantidadeJaEntregue + item.quantidadeParaEntregar }}</span>
             <button class="qty-btn-entrega" type="button"
                     [disabled]="item.quantidadeParaEntregar >= maxParaEntregar(item)"
                     (click)="item.quantidadeParaEntregar = item.quantidadeParaEntregar + 1">+</button>
@@ -53,7 +53,7 @@
               @if (item.quantidadeJaEntregue > 0) {
                 {{ item.quantidadeJaEntregue }} já entregue{{ item.quantidadeJaEntregue > 1 ? 's' : '' }} ·
               }
-              entregando {{ item.quantidadeParaEntregar }} de {{ maxParaEntregar(item) }}
+              entregando mais {{ item.quantidadeParaEntregar }} de {{ maxParaEntregar(item) }}
             </span>
           }
         </div>

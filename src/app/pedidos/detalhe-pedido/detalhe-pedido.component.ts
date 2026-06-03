@@ -20,6 +20,11 @@ interface ItemEntrega {
   quantidadeParaEntregar: number;
 }
 
+interface DetalhePedidoData {
+  pedido: Pedido;
+  entregaParcial?: boolean;
+}
+
 @Component({
   selector: 'app-detalhe-pedido',
   standalone: true,
@@ -32,7 +37,9 @@ interface ItemEntrega {
   styleUrl: './detalhe-pedido.component.scss',
 })
 export class DetalhePedidoComponent {
-  readonly pedido = inject<Pedido>(MAT_DIALOG_DATA);
+  private data = inject<DetalhePedidoData>(MAT_DIALOG_DATA);
+  readonly pedido: Pedido = this.data.pedido;
+  private entregaParcial = !!this.data.entregaParcial;
   private dialogRef = inject(MatDialogRef<DetalhePedidoComponent>);
   private dialog = inject(MatDialog);
   private pedidosService = inject(PedidosService);
@@ -66,7 +73,7 @@ export class DetalhePedidoComponent {
   readonly statusLabel: string = STATUS_LABEL[this.statusPedido];
   readonly statusIcon: string = STATUS_ICON[this.statusPedido];
   readonly formatDataHora = formatDataHora;
-  readonly somenteLeitura = this.statusPedido !== 'a-pagar';
+  readonly somenteLeitura = !this.entregaParcial && this.statusPedido !== 'a-pagar';
 
   async confirmarEntrega(): Promise<void> {
     if (this.saving || !this.algumNovoMarcado) return;

@@ -99,16 +99,15 @@
   &:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
+
+  &.no-click {
+    cursor: default;
+    &:hover { box-shadow: none; }
+  }
 }
 
 .card.entregue {
   opacity: 0.5;
-}
-
-.card.cancelado,
-.card.nao-retirado {
-  background: #fff5f5;
-  border: 2px dashed #e53935;
 }
 
 .card.alerta {
@@ -127,6 +126,12 @@
   .status-icon mat-icon {
     color: #e53935;
   }
+}
+
+.card.cancelado,
+.card.nao-retirado {
+  background: #dbdbdb;
+  border: 2px dashed #9e9e9e;
 }
 
 // ── Card interno ─────────────────────────────
@@ -235,6 +240,7 @@
 
     &:last-child { border-bottom: none; }
     &.item-entregue { color: #aaa; }
+    &.item-parcial { color: #f59500; }
   }
 }
 
@@ -244,6 +250,14 @@
   height: 13px;
   color: #43a047;
   flex-shrink: 0;
+}
+
+.check-parcial {
+  font-size: 11px;
+  font-weight: 600;
+  color: #f59500;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 // ── Ações do card ────────────────────────────
