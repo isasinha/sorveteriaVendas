@@ -1,4 +1,5 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { interval, firstValueFrom } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -22,7 +23,7 @@ type Status = 'normal' | 'alerta' | 'critico';
 @Component({
   selector: 'app-consultar-pedidos',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule],
   templateUrl: './consultar-pedidos.component.html',
   styleUrl: './consultar-pedidos.component.scss'
 })
@@ -48,16 +49,24 @@ export class ConsultarPedidosComponent implements OnInit {
   pedidos: Pedido[] = [];
   agora = Date.now();
   filtro: FiltroConsultar = this.filtrosDisponiveis[0] ?? 'todos';
+  busca = '';
   entregandoId: string | null = null;
 
   get pedidosFiltrados(): Pedido[] {
+    let lista: Pedido[];
     switch (this.filtro) {
-      case 'cancelados':    return this.pedidos.filter(p => this.isEncerrado(p));
-      case 'em-preparacao': return this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && !p.entregue);
-      case 'concluidos':    return this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && p.entregue);
-      case 'nao-pagos':     return this.pedidos.filter(p => !this.isEncerrado(p) && !p.pago);
-      default:              return this.pedidos;
+      case 'cancelados':    lista = this.pedidos.filter(p => this.isEncerrado(p)); break;
+      case 'em-preparacao': lista = this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && !p.entregue); break;
+      case 'concluidos':    lista = this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && p.entregue); break;
+      case 'nao-pagos':     lista = this.pedidos.filter(p => !this.isEncerrado(p) && !p.pago); break;
+      default:              lista = this.pedidos;
     }
+    const termo = this.busca.trim().toLowerCase();
+    if (!termo) return lista;
+    return lista.filter(p =>
+      p.nomeCliente.toLowerCase().includes(termo) ||
+      p.numero.toString().includes(termo)
+    );
   }
 
   ngOnInit(): void {

@@ -25,11 +25,19 @@
 
 // ── Filtros ──────────────────────────────────
 
+.barra-consulta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: var(--spacing-2xl);
+  flex-wrap: wrap;
+}
+
 .filtros {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: var(--spacing-2xl);
+  flex: 1;
 
   button {
     border-radius: 20px;
@@ -55,6 +63,54 @@
       color: #fff;
     }
   }
+}
+
+.busca-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid #d0d0d0;
+  border-radius: 24px;
+  padding: 0 12px;
+  height: 36px;
+  min-width: 180px;
+  max-width: 240px;
+
+  &:focus-within {
+    border-color: var(--color-primary);
+  }
+}
+
+.busca-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.busca-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+  color: #333;
+
+  &::placeholder { color: #aaa; }
+}
+
+.busca-limpar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  color: #999;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
 }
 
 .vazio {

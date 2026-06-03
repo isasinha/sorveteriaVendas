@@ -11,12 +11,23 @@
     </button>
   </div>
 
-  <div class="filtros no-print">
-    @for (f of FILTROS_CONSULTAR; track f.chave) {
-      @if (filtrosDisponiveis.includes(f.chave)) {
-        <button mat-flat-button [class.ativo]="filtro === f.chave" (click)="filtro = f.chave">{{ f.label }}</button>
+  <div class="barra-consulta no-print">
+    <div class="filtros">
+      @for (f of FILTROS_CONSULTAR; track f.chave) {
+        @if (filtrosDisponiveis.includes(f.chave)) {
+          <button mat-flat-button [class.ativo]="filtro === f.chave" (click)="filtro = f.chave">{{ f.label }}</button>
+        }
       }
-    }
+    </div>
+    <div class="busca-wrapper">
+      <mat-icon class="busca-icon">search</mat-icon>
+      <input class="busca-input" type="text" placeholder="Nome ou número" [(ngModel)]="busca" />
+      @if (busca) {
+        <button class="busca-limpar" type="button" (click)="busca = ''">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </div>
   </div>
 
   @if (pedidosFiltrados.length === 0) {
