@@ -13,7 +13,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ItensService } from '../../core/services/itens.service';
 import { PedidosService } from '../../core/services/pedidos.service';
 import { ItemBase } from '../../core/models/item.model';
-import { ItemPedido, Pedido } from '../../core/models/pedido.model';
+import { ItemPedido, Pedido, resumoItemPedido } from '../../core/models/pedido.model';
 import { formatPreco } from '../../core/utils/formatters';
 import { AdicionarItemComponent } from '../adicionar-item/adicionar-item.component';
 
@@ -38,6 +38,7 @@ export class AlterarPedidoComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   readonly formatPreco = formatPreco;
+  readonly resumoItemPedido = resumoItemPedido;
 
   pedidoItens: ItemPedido[] = this.pedido.itens.map(item => ({ ...item }));
   doacao: number | null = null;
@@ -130,13 +131,6 @@ export class AlterarPedidoComponent implements OnInit {
     const ref = this.dialog.open(AdicionarItemComponent, { width: '520px', maxHeight: '90vh' });
     const novoItem: ItemPedido | undefined = await firstValueFrom(ref.afterClosed());
     if (novoItem) this.pedidoItens.push(novoItem);
-  }
-
-  getResumoItem(item: ItemPedido): string {
-    const partes: string[] = [item.tipoNome];
-    if (item.saboresNomes.length) partes.push(item.saboresNomes.join(', '));
-    if (item.adicionaisNomes.length) partes.push(`+ ${item.adicionaisNomes.join(', ')}`);
-    return partes.join(' — ');
   }
 
   async salvar(): Promise<void> {

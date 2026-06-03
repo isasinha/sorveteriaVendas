@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PedidosService } from '../../core/services/pedidos.service';
-import { Pedido, StatusPedido, STATUS_ICON, STATUS_LABEL, getStatusPedido, resumoItemPedido } from '../../core/models/pedido.model';
+import { Pedido, STATUS_ICON, STATUS_LABEL, getStatusPedido, resumoItemPedido } from '../../core/models/pedido.model';
 import { DetalhePedidoComponent } from '../detalhe-pedido/detalhe-pedido.component';
 import { PagamentoComponent } from '../pagamento/pagamento.component';
 import { AlterarPedidoComponent } from '../alterar-pedido/alterar-pedido.component';
@@ -44,20 +44,13 @@ export class ConsultarPedidosComponent implements OnInit {
   entregandoId: string | null = null;
 
   get pedidosFiltrados(): Pedido[] {
-    const encerrado = (p: Pedido) => p.cancelado || p.naoRetirado;
     switch (this.filtro) {
-      case 'cancelados':
-        return this.pedidos.filter(p => p.cancelado || p.naoRetirado);
-      case 'atrasados':
-        return this.pedidos.filter(p => !encerrado(p) && !p.entregue && this.getStatus(p) !== 'normal');
-      case 'nao-entregues':
-        return this.pedidos.filter(p => !encerrado(p) && !p.entregue);
-      case 'concluidos':
-        return this.pedidos.filter(p => !encerrado(p) && p.pago && p.entregue);
-      case 'nao-pagos':
-        return this.pedidos.filter(p => !encerrado(p) && !p.pago);
-      default:
-        return this.pedidos;
+      case 'cancelados':    return this.pedidos.filter(p => this.isEncerrado(p));
+      case 'atrasados':     return this.pedidos.filter(p => !this.isEncerrado(p) && !p.entregue && this.getStatus(p) !== 'normal');
+      case 'nao-entregues': return this.pedidos.filter(p => !this.isEncerrado(p) && !p.entregue);
+      case 'concluidos':    return this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && p.entregue);
+      case 'nao-pagos':     return this.pedidos.filter(p => !this.isEncerrado(p) && !p.pago);
+      default:              return this.pedidos;
     }
   }
 
@@ -79,29 +72,20 @@ export class ConsultarPedidosComponent implements OnInit {
     return 'normal';
   }
 
+  private isEncerrado(pedido: Pedido): boolean {
+    return !!pedido.cancelado || !!pedido.naoRetirado;
+  }
+
   podeEntregar(pedido: Pedido): boolean {
-    return pedido.pago && !pedido.entregue && !pedido.cancelado && !pedido.naoRetirado;
+    return pedido.pago && !pedido.entregue && !this.isEncerrado(pedido);
   }
 
   podeCancelar(pedido: Pedido): boolean {
-    return !pedido.entregue && !pedido.cancelado && !pedido.naoRetirado;
+    return !pedido.entregue && !this.isEncerrado(pedido);
   }
 
   podeAlterar(pedido: Pedido): boolean {
-    return !pedido.entregue && !pedido.cancelado && !pedido.naoRetirado;
-  }
-
-  podeEntregaParcial(pedido: Pedido): boolean {
-    return pedido.pago && !pedido.entregue && !pedido.cancelado && !pedido.naoRetirado;
-  }
-
-  statusPedido(pedido: Pedido): StatusPedido { return getStatusPedido(pedido); }
-
-  linhasItens(pedido: Pedido): string[] {
-    return pedido.itens.map(item => {
-      const prefixo = item.quantidade > 1 ? `${item.quantidade}x ` : '';
-      return `${prefixo}${resumoItemPedido(item)}`;
-    });
+    return !pedido.entregue && !this.isEncerrado(pedido);
   }
 
   async entregar(pedido: Pedido): Promise<void> {

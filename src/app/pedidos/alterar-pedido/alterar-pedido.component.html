@@ -30,7 +30,7 @@
               </button>
             </div>
 
-            <span class="item-desc">{{ getResumoItem(item) }}</span>
+            <span class="item-desc">{{ resumoItemPedido(item) }}</span>
 
             @if (item.tipoPreco != null) {
               <span class="item-preco">{{ formatPreco(item.tipoPreco * item.quantidade) }}</span>
