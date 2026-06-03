@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -23,13 +24,17 @@ interface BlocoState {
   novoNome: string;
   novoPreco: number | null;
   novoQtdSabores: number | null;
+  novoSaboresPermitidos: string[];
+  novoBarracasPermitidas: string[];
   saving: boolean;
   editingId: string | null;
   editingNome: string;
   editingPreco: number | null;
   editingQtdSabores: number | null;
+  editingSaboresPermitidos: string[];
   deletingId: string | null;
   erro: string;
+  expandidoId: string | null; // painel de sabores/barracas aberto
 }
 
 interface BlocoConfig {
@@ -50,7 +55,7 @@ interface BlocoConfig {
     FormsModule, NgTemplateOutlet,
     MatCardModule, MatButtonModule, MatIconModule,
     MatFormFieldModule, MatInputModule,
-    MatProgressSpinnerModule, MatTooltipModule, MatCheckboxModule,
+    MatProgressSpinnerModule, MatSelectModule, MatTooltipModule, MatCheckboxModule,
   ],
   templateUrl: './alterar-itens.component.html',
   styleUrl: './alterar-itens.component.scss'
@@ -84,6 +89,89 @@ export class AlterarItensComponent implements OnInit {
     barracas:   this.novoBloco(),
   };
 
+  // Estado dos painéis de sabores/barracas por produto
+  // chave: produtoId, valor: Set de ids selecionados
+  editSaboresProduto: Record<string, Set<string>> = {};
+  editBarracasProduto: Record<string, Set<string>> = {};
+  savingProdutoId: string | null = null;
+
+  get sabores(): ItemBase[] { return this.blocos['sabores']?.itens ?? []; }
+  get barracas(): ItemBase[] { return this.blocos['barracas']?.itens ?? []; }
+
+  saboresNomesDoItem(item: ItemBase): string {
+    if (item.saboresPermitidos === undefined) return 'Todos';
+    if (item.saboresPermitidos.length === 0) return 'Nenhum';
+    return item.saboresPermitidos
+      .map(id => this.sabores.find(s => s.id === id)?.nome ?? id)
+      .join(', ');
+  }
+
+  toggleExpandido(produtoId: string): void {
+    const b = this.blocos['produtos'];
+    if (b.expandidoId === produtoId) {
+      b.expandidoId = null;
+    } else {
+      b.expandidoId = produtoId;
+      const produto = b.itens.find(i => i.id === produtoId);
+      if (produto) {
+        if (!(produtoId in this.editSaboresProduto)) {
+          this.editSaboresProduto[produtoId] = new Set(produto.saboresPermitidos ?? []);
+        }
+        if (!(produtoId in this.editBarracasProduto)) {
+          this.editBarracasProduto[produtoId] = new Set(produto.barracasPermitidas ?? []);
+        }
+      }
+    }
+  }
+
+  isSaborPermitido(produtoId: string, saborId: string): boolean {
+    const set = this.editSaboresProduto[produtoId];
+    return set ? set.has(saborId) : false;
+  }
+
+  isBarracaPermitida(produtoId: string, barracaId: string): boolean {
+    const set = this.editBarracasProduto[produtoId];
+    return set ? set.has(barracaId) : false;
+  }
+
+  toggleSaborProduto(produtoId: string, saborId: string): void {
+    const set = this.editSaboresProduto[produtoId];
+    if (!set) return;
+    if (set.has(saborId)) set.delete(saborId); else set.add(saborId);
+  }
+
+  toggleBarracaProduto(produtoId: string, barracaId: string): void {
+    const set = this.editBarracasProduto[produtoId];
+    if (!set) return;
+    if (set.has(barracaId)) set.delete(barracaId); else set.add(barracaId);
+  }
+
+  async salvarSaboresBarracas(produtoId: string): Promise<void> {
+    this.savingProdutoId = produtoId;
+    try {
+      const saboresArr = Array.from(this.editSaboresProduto[produtoId] ?? []);
+      const barracas = Array.from(this.editBarracasProduto[produtoId] ?? []);
+      // todos selecionados = undefined (sem restrição); lista vazia = nenhum; parcial = só esses
+      const todosOsSabores = this.sabores.map(s => s.id);
+      const saboresValue = saboresArr.length === todosOsSabores.length && todosOsSabores.every(id => saboresArr.includes(id))
+        ? undefined
+        : saboresArr;
+      const extra: Record<string, unknown> = {
+        saboresPermitidos: saboresValue,
+        barracasPermitidas: barracas.length > 0 ? barracas : undefined,
+      };
+      const produto = this.blocos['produtos'].itens.find(i => i.id === produtoId);
+      if (produto) {
+        await this.itensService.updateItem('produtos', produtoId, produto.nome, extra);
+      }
+      this.blocos['produtos'].expandidoId = null;
+    } catch {
+      this.blocos['produtos'].erro = 'Erro ao salvar sabores/barracas.';
+    } finally {
+      this.savingProdutoId = null;
+    }
+  }
+
   // Permissões por perfil
   perfis: PerfilCompleto[] = [];
   editPermissoes = new Map<string, Set<Funcionalidade>>();
@@ -98,7 +186,7 @@ export class AlterarItensComponent implements OnInit {
   erroTabela = '';
 
   private novoBloco(): BlocoState {
-    return { itens: [], loading: true, novoNome: '', novoPreco: null, novoQtdSabores: null, saving: false, editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, deletingId: null, erro: '' };
+    return { itens: [], loading: true, novoNome: '', novoPreco: null, novoQtdSabores: null, novoSaboresPermitidos: [], novoBarracasPermitidas: [], saving: false, editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], deletingId: null, erro: '', expandidoId: null };
   }
 
   ngOnInit(): void {
@@ -139,10 +227,19 @@ export class AlterarItensComponent implements OnInit {
       const extra: Record<string, unknown> = {};
       if (b.novoPreco != null) extra['preco'] = b.novoPreco;
       if (b.novoQtdSabores != null) extra['qtdSabores'] = b.novoQtdSabores;
+      // todos selecionados = undefined; 
+      const todosOsSabores = this.sabores.map(s => s.id);
+      const saboresNovos = b.novoSaboresPermitidos;
+      extra['saboresPermitidos'] = saboresNovos.length === todosOsSabores.length && todosOsSabores.every(id => saboresNovos.includes(id))
+        ? undefined
+        : saboresNovos;
+      if (b.novoBarracasPermitidas.length > 0) extra['barracasPermitidas'] = b.novoBarracasPermitidas;
       await this.itensService.addItem(col, b.novoNome, extra);
       b.novoNome = '';
       b.novoPreco = null;
       b.novoQtdSabores = null;
+      b.novoSaboresPermitidos = [];
+      b.novoBarracasPermitidas = [];
     } catch {
       b.erro = 'Erro ao adicionar item.';
     } finally {
@@ -151,11 +248,11 @@ export class AlterarItensComponent implements OnInit {
   }
 
   iniciarEdicao(col: ColecaoItens, item: ItemBase): void {
-    Object.assign(this.blocos[col], { editingId: item.id, editingNome: item.nome, editingPreco: item.preco ?? null, editingQtdSabores: item.qtdSabores ?? null, erro: '' });
+    Object.assign(this.blocos[col], { editingId: item.id, editingNome: item.nome, editingPreco: item.preco ?? null, editingQtdSabores: item.qtdSabores ?? null, editingSaboresPermitidos: [...(item.saboresPermitidos ?? [])], erro: '' });
   }
 
   cancelarEdicao(col: ColecaoItens): void {
-    Object.assign(this.blocos[col], { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null });
+    Object.assign(this.blocos[col], { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [] });
   }
 
   async salvarEdicao(col: ColecaoItens): Promise<void> {
@@ -167,8 +264,15 @@ export class AlterarItensComponent implements OnInit {
       const extra: Record<string, unknown> = {};
       if (b.editingPreco != null) extra['preco'] = b.editingPreco;
       if (b.editingQtdSabores != null) extra['qtdSabores'] = b.editingQtdSabores;
+      // todos selecionados = undefined; 
+      const todosOsSabores = this.sabores.map(s => s.id);
+      const saboresArr = b.editingSaboresPermitidos;
+      const saboresValue = saboresArr.length === todosOsSabores.length && todosOsSabores.every(id => saboresArr.includes(id))
+        ? undefined
+        : saboresArr;
+      extra['saboresPermitidos'] = saboresValue;
       await this.itensService.updateItem(col, b.editingId, b.editingNome, extra);
-      Object.assign(b, { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null });
+      Object.assign(b, { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [] });
     } catch {
       b.erro = 'Erro ao salvar edição.';
     } finally {

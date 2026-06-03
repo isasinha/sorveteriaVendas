@@ -36,7 +36,7 @@ export class ConsultarPedidosComponent implements OnInit {
 
   readonly filtrosDisponiveis: FiltroConsultar[] = this.authService.getPerfil()?.filtrosVisiveis ?? FILTROS_CONSULTAR.map(f => f.chave);
   readonly FILTROS_CONSULTAR = FILTROS_CONSULTAR;
-  readonly isFila = this.authService.getPerfil()?.nome?.trim().toLowerCase() === 'fila';
+  readonly isAtendimento = this.authService.getPerfil()?.nome?.trim().toLowerCase() === 'atendimento';
   readonly isMontagem = this.authService.getPerfil()?.nome?.trim().toLowerCase().includes('montagem') ?? false;
 
   readonly STATUS_LABEL = STATUS_LABEL;
@@ -146,7 +146,7 @@ export class ConsultarPedidosComponent implements OnInit {
   }
 
   async abrirDetalhe(pedido: Pedido, entregaParcial = false): Promise<void> {
-    if (this.isFila) return;
+    if (this.isAtendimento) return;
 
     if (getStatusPedido(pedido) === 'a-pagar') {
       this.dialog.open(PagamentoComponent, {

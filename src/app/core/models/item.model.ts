@@ -3,6 +3,8 @@ export interface ItemBase {
   nome: string;
   preco?: number;
   qtdSabores?: number;
+  saboresPermitidos?: string[];
+  barracasPermitidas?: string[];
 }
 
 export type ColecaoItens = 'produtos' | 'sabores' | 'adicionais' | 'perfis' | 'barracas';

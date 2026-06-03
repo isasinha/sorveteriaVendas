@@ -92,7 +92,7 @@
                     [ngModel]="itemAtual.saboresIds[si]"
                     (ngModelChange)="setSaborSlot(si, $event)"
                     [disabled]="saving">
-                    @for (sabor of sabores; track sabor.id) {
+              @for (sabor of saboresDoTipoAtual(); track sabor.id) {
                       <mat-chip-option [value]="sabor.id" color="primary">{{ sabor.nome }}</mat-chip-option>
                     }
                   </mat-chip-listbox>

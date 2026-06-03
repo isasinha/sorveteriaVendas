@@ -136,6 +136,7 @@
   .col-nome   { width: auto; }
   .col-preco  { width: 96px; }
   .col-qtd    { width: 116px; }
+  .col-sabores { width: 180px; }
   .col-acoes  { width: 80px; }
 }
 
@@ -185,6 +186,15 @@
   padding: 2px 6px;
 }
 
+.cell-sabores {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
 .cell-acoes {
   display: flex;
   justify-content: flex-end;
@@ -193,6 +203,7 @@
 .edit-field       { width: 100%; font-size: 14px; }
 .edit-preco-field { width: 100%; font-size: 14px; }
 .edit-qtd-field   { width: 100%; font-size: 14px; }
+.edit-sabores-field { width: 100%; font-size: 13px; }
 
 .erro-msg {
   display: flex;
@@ -226,7 +237,16 @@
 
   .add-field,
   .add-preco-field,
-  .add-qtd-field { width: 100%; }
+  .add-qtd-field,
+  .add-sabores-field,
+  .add-barracas-field { width: 100%; }
+
+  .add-linha {
+    display: flex;
+    gap: var(--spacing-sm);
+
+    > * { flex: 1 1 0; width: 0; min-width: 0; }
+  }
 
   button { width: 100%; }
 }

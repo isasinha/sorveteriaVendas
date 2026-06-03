@@ -39,7 +39,7 @@ export class AlterarPedidoComponent implements OnInit {
   private authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
 
-  readonly isFila = this.authService.getPerfil()?.nome?.trim().toLowerCase() === 'fila';
+  readonly isAtendimento = this.authService.getPerfil()?.nome?.trim().toLowerCase() === 'atendimento';
   readonly formatPreco = formatPreco;
   readonly resumoItemPedido = resumoItemPedido;
 
@@ -155,7 +155,7 @@ export class AlterarPedidoComponent implements OnInit {
         total: this.total,
         doacao: doacaoFinal,
         valorPago: valorPagoFinal,
-        ...(voltarParaAPagar ? { pago: false } : novoValorPagoInformado ? { pago: true } : {}),
+        ...(voltarParaAPagar ? { pago: false } : {}),
       });
       this.dialogRef.close(true);
     } catch {

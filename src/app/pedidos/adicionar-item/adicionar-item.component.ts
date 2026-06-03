@@ -75,6 +75,13 @@ export class AdicionarItemComponent implements OnInit {
     this.saboresIds = Array(tipo?.qtdSabores ?? 0).fill(null);
   }
 
+  saboresDoTipoAtual(): ItemBase[] {
+    const tipo = this.tiposMap.get(this.tipoId);
+    if (tipo?.saboresPermitidos === undefined) return this.sabores; // todos
+    if (tipo.saboresPermitidos.length === 0) return [];             // nenhum
+    return this.sabores.filter(s => tipo.saboresPermitidos!.includes(s.id));
+  }
+
   setSaborSlot(si: number, value: string | undefined): void {
     this.saboresIds[si] = value ?? null;
   }

@@ -113,6 +113,13 @@ export class NovoPedidoComponent implements OnInit {
     this.itemAtual.saboresIds = Array(qtd).fill(null);
   }
 
+  saboresDoTipoAtual(): ItemBase[] {
+    const tipo = this.tiposMap.get(this.itemAtual.tipoId);
+    if (tipo?.saboresPermitidos === undefined) return this.sabores; // todos
+    if (tipo.saboresPermitidos.length === 0) return [];             // nenhum
+    return this.sabores.filter(s => tipo.saboresPermitidos!.includes(s.id));
+  }
+
   setSaborSlot(si: number, value: string | undefined): void {
     this.itemAtual.saboresIds[si] = value ?? null;
   }
@@ -184,8 +191,8 @@ export class NovoPedidoComponent implements OnInit {
       this.itemAtual = { tipoId: '', saboresIds: [], adicionaisIds: [], quantidade: 1 };
       this.numeroPedido = await this.pedidosService.getProximoNumero();
 
-      const isFila = this.authService.getPerfil()?.nome.trim().toLowerCase() === 'fila';
-      if (!isFila) {
+      const isAtendimento = this.authService.getPerfil()?.nome.trim().toLowerCase() === 'atendimento';
+      if (!isAtendimento) {
         this.dialog.open(PagamentoComponent, {
           data: { pedidoId, numero, nomeCliente, itens, total: totalPedido, origem: '/pedidos/novo' },
           width: '500px',

@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { db } from '../config/firebase.config';
 import {
   collection, addDoc, updateDoc, deleteDoc,
-  doc, query, orderBy, onSnapshot
+  doc, query, orderBy, onSnapshot, deleteField,
+  UpdateData
 } from 'firebase/firestore';
 import { Observable } from 'rxjs';
 import { ItemBase, ColecaoItens } from '../models/item.model';
@@ -21,6 +22,8 @@ export class ItensService {
             const item: import('../models/item.model').ItemBase = { id: d.id, nome: data['nome'] as string };
             if (data['preco'] != null) item.preco = data['preco'] as number;
             if (data['qtdSabores'] != null) item.qtdSabores = data['qtdSabores'] as number;
+            if (data['saboresPermitidos'] != null) item.saboresPermitidos = data['saboresPermitidos'] as string[];
+            if (data['barracasPermitidas'] != null) item.barracasPermitidas = data['barracasPermitidas'] as string[];
             return item;
           })
         ),
@@ -35,7 +38,13 @@ export class ItensService {
   }
 
   async updateItem(colecao: ColecaoItens, id: string, nome: string, extra?: Record<string, unknown>): Promise<void> {
-    await updateDoc(doc(db, colecao, id), { nome: nome.trim(), ...extra });
+    const data: Record<string, unknown> = { nome: nome.trim() };
+    if (extra) {
+      for (const [k, v] of Object.entries(extra)) {
+        data[k] = v === undefined ? deleteField() : v;
+      }
+    }
+    await updateDoc(doc(db, colecao, id), data as UpdateData<object>);
   }
 
   async deleteItem(colecao: ColecaoItens, id: string): Promise<void> {
