@@ -119,7 +119,7 @@ export class ConsultarPedidosComponent implements OnInit {
       const ref = this.dialog.open(ConfirmacaoDialogComponent, {
         data: {
           titulo: 'Cancelar pedido',
-          mensagem: 'O valor pago será devolvido ao cliente?',
+          mensagem: 'Este pedido contém valores já pagos.O valor será devolvido ao cliente?',
           labelSim: 'Sim, marcar como Cancelado',
           labelNao: 'Não, marcar como Não Retirado',
           labelVoltar: 'Voltar',

@@ -43,12 +43,12 @@
             <span class="data">{{ formatData(pedido.data) }}</span>
             <span class="hora">{{ formatHora(pedido.data) }}</span>
           </div>
-          @if (!pedido.cancelado && status === 'alerta') {
+          @if (!pedido.cancelado && !pedido.naoRetirado && status === 'alerta') {
             <div class="status-icon" title="Pedido aguardando há mais de 15 minutos">
               <mat-icon>warning</mat-icon>
             </div>
           }
-          @if (!pedido.cancelado && status === 'critico') {
+          @if (!pedido.cancelado && !pedido.naoRetirado && status === 'critico') {
             <div class="status-icon" title="Pedido aguardando há mais de 30 minutos">
               <mat-icon>local_fire_department</mat-icon>
             </div>
@@ -74,7 +74,7 @@
         </ul>
 
         <div class="card-actions" (click)="$event.stopPropagation()">
-          @if (!pedido.naoRetirado) {
+          @if (!pedido.naoRetirado && !pedido.cancelado) {
             <button class="btn-acao btn-entregar"
                     [disabled]="!podeEntregar(pedido) || entregandoId !== null"
                     (click)="entregar(pedido)">
