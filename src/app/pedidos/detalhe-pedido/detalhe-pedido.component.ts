@@ -27,7 +27,6 @@ interface ItemEntrega {
     FormsModule,
     MatDialogModule, MatButtonModule, MatIconModule,
     MatCheckboxModule, MatProgressSpinnerModule,
-    ConfirmacaoDialogComponent,
   ],
   templateUrl: './detalhe-pedido.component.html',
   styleUrl: './detalhe-pedido.component.scss',

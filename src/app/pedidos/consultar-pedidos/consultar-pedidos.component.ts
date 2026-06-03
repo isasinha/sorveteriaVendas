@@ -147,20 +147,7 @@ export class ConsultarPedidosComponent implements OnInit {
   }
 
   async abrirDetalhe(pedido: Pedido): Promise<void> {
-    if (pedido.naoRetirado) {
-      const ref = this.dialog.open(ConfirmacaoDialogComponent, {
-        data: {
-          titulo: 'Pedido não retirado',
-          mensagem: 'Deseja voltar ao status “em preparação”?',
-          labelSim: 'Sim, voltar',
-          labelNao: 'Não',
-        },
-        width: '380px',
-      });
-      const confirmar = await firstValueFrom(ref.afterClosed());
-      if (confirmar) await this.pedidosService.desfazerNaoRetirado(pedido.id);
-      return;
-    }
+
     if (getStatusPedido(pedido) === 'a-pagar') {
       this.dialog.open(PagamentoComponent, {
         data: { pedidoId: pedido.id, numero: pedido.numero, nomeCliente: pedido.nomeCliente, itens: pedido.itens, total: pedido.total, origem: '/pedidos/consultar' },
