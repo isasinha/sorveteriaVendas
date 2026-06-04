@@ -32,6 +32,7 @@ interface BlocoState {
   editingPreco: number | null;
   editingQtdSabores: number | null;
   editingSaboresPermitidos: string[];
+  editingBarracasPermitidas: string[];
   deletingId: string | null;
   erro: string;
   expandidoId: string | null; // painel de sabores/barracas aberto
@@ -67,15 +68,16 @@ export class AlterarItensComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   readonly blocosConfig: BlocoConfig[] = [
-    { col: 'produtos',    titulo: 'Produtos',   icon: 'category',        labelAdicionar: 'Novo produto',   iconClass: 'icon-produtos',   temPreco: true, temQtdSabores: true, span: 2 },
+    { col: 'produtos',   titulo: 'Produtos',   icon: 'category',        labelAdicionar: 'Novo produto',   iconClass: 'icon-produtos',   temPreco: true, temQtdSabores: true, span: 3 },
     { col: 'sabores',    titulo: 'Sabores',    icon: 'icecream',        labelAdicionar: 'Novo sabor',     iconClass: 'icon-sabores'    },
     { col: 'adicionais', titulo: 'Adicionais', icon: 'add_circle',      labelAdicionar: 'Novo adicional', iconClass: 'icon-adicionais' },
-    { col: 'perfis',     titulo: 'Perfis',     icon: 'manage_accounts', labelAdicionar: 'Novo perfil',    iconClass: 'icon-perfis'     },
     { col: 'barracas',   titulo: 'Barracas',   icon: 'store',           labelAdicionar: 'Nova barraca',   iconClass: 'icon-barracas'   },
+    { col: 'perfis',     titulo: 'Perfis',     icon: 'manage_accounts', labelAdicionar: 'Novo perfil',    iconClass: 'icon-perfis'     },  
   ];
 
-  readonly blocosLinha1 = this.blocosConfig.slice(0, 2);
-  readonly blocosLinha2 = this.blocosConfig.slice(2);
+  readonly blocosLinha1 = this.blocosConfig.slice(0,1);
+  readonly blocosLinha2 = this.blocosConfig.slice(1,4);
+  readonly blocosLinha3 = this.blocosConfig.slice(4,5);
   readonly funcionalidades = FUNCIONALIDADES;
   readonly filtrosConsultar = FILTROS_CONSULTAR;
   readonly isTI = isTI;
@@ -103,6 +105,14 @@ export class AlterarItensComponent implements OnInit {
     if (item.saboresPermitidos.length === 0) return 'Nenhum';
     return item.saboresPermitidos
       .map(id => this.sabores.find(s => s.id === id)?.nome ?? id)
+      .join(', ');
+  }
+
+  barracasNomesDoItem(item: ItemBase): string {
+    if (item.barracasPermitidas === undefined) return 'Todas';
+    if (item.barracasPermitidas.length === 0) return 'Nenhuma';
+    return item.barracasPermitidas
+      .map(id => this.barracas.find(b => b.id === id)?.nome ?? id)
       .join(', ');
   }
 
@@ -156,9 +166,13 @@ export class AlterarItensComponent implements OnInit {
       const saboresValue = saboresArr.length === todosOsSabores.length && todosOsSabores.every(id => saboresArr.includes(id))
         ? undefined
         : saboresArr;
+      const todosAsBarracas = this.barracas.map(b => b.id);
+      const barracasValue = barracas.length === todosAsBarracas.length && todosAsBarracas.every(id => barracas.includes(id))
+        ? undefined
+        : barracas;
       const extra: Record<string, unknown> = {
         saboresPermitidos: saboresValue,
-        barracasPermitidas: barracas.length > 0 ? barracas : undefined,
+        barracasPermitidas: barracasValue,
       };
       const produto = this.blocos['produtos'].itens.find(i => i.id === produtoId);
       if (produto) {
@@ -186,7 +200,7 @@ export class AlterarItensComponent implements OnInit {
   erroTabela = '';
 
   private novoBloco(): BlocoState {
-    return { itens: [], loading: true, novoNome: '', novoPreco: null, novoQtdSabores: null, novoSaboresPermitidos: [], novoBarracasPermitidas: [], saving: false, editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], deletingId: null, erro: '', expandidoId: null };
+    return { itens: [], loading: true, novoNome: '', novoPreco: null, novoQtdSabores: null, novoSaboresPermitidos: [], novoBarracasPermitidas: [], saving: false, editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], editingBarracasPermitidas: [], deletingId: null, erro: '', expandidoId: null };
   }
 
   ngOnInit(): void {
@@ -233,7 +247,12 @@ export class AlterarItensComponent implements OnInit {
       extra['saboresPermitidos'] = saboresNovos.length === todosOsSabores.length && todosOsSabores.every(id => saboresNovos.includes(id))
         ? undefined
         : saboresNovos;
-      if (b.novoBarracasPermitidas.length > 0) extra['barracasPermitidas'] = b.novoBarracasPermitidas;
+      // todos selecionados = undefined; lista vazia = nenhuma; parcial = só essas
+      const todosAsBarracas = this.barracas.map(b => b.id);
+      const barracasNovas = b.novoBarracasPermitidas;
+      extra['barracasPermitidas'] = barracasNovas.length === todosAsBarracas.length && todosAsBarracas.every(id => barracasNovas.includes(id))
+        ? undefined
+        : barracasNovas;
       await this.itensService.addItem(col, b.novoNome, extra);
       b.novoNome = '';
       b.novoPreco = null;
@@ -248,11 +267,11 @@ export class AlterarItensComponent implements OnInit {
   }
 
   iniciarEdicao(col: ColecaoItens, item: ItemBase): void {
-    Object.assign(this.blocos[col], { editingId: item.id, editingNome: item.nome, editingPreco: item.preco ?? null, editingQtdSabores: item.qtdSabores ?? null, editingSaboresPermitidos: [...(item.saboresPermitidos ?? [])], erro: '' });
+    Object.assign(this.blocos[col], { editingId: item.id, editingNome: item.nome, editingPreco: item.preco ?? null, editingQtdSabores: item.qtdSabores ?? null, editingSaboresPermitidos: [...(item.saboresPermitidos ?? [])], editingBarracasPermitidas: [...(item.barracasPermitidas ?? [])], erro: '' });
   }
 
   cancelarEdicao(col: ColecaoItens): void {
-    Object.assign(this.blocos[col], { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [] });
+    Object.assign(this.blocos[col], { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], editingBarracasPermitidas: [] });
   }
 
   async salvarEdicao(col: ColecaoItens): Promise<void> {
@@ -271,8 +290,15 @@ export class AlterarItensComponent implements OnInit {
         ? undefined
         : saboresArr;
       extra['saboresPermitidos'] = saboresValue;
+      // barracas: todos = undefined; vazio = nenhuma; parcial = só essas
+      const todosAsBarracasEdit = this.barracas.map(b => b.id);
+      const barracasArr = b.editingBarracasPermitidas;
+      const barracasValue = barracasArr.length === todosAsBarracasEdit.length && todosAsBarracasEdit.every(id => barracasArr.includes(id))
+        ? undefined
+        : barracasArr;
+      extra['barracasPermitidas'] = barracasValue;
       await this.itensService.updateItem(col, b.editingId, b.editingNome, extra);
-      Object.assign(b, { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [] });
+      Object.assign(b, { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], editingBarracasPermitidas: [] });
     } catch {
       b.erro = 'Erro ao salvar edição.';
     } finally {

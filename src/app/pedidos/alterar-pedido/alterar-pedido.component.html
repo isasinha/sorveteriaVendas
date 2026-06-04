@@ -57,7 +57,7 @@
                         [ngModel]="item.saboresIds[si]"
                         (ngModelChange)="setSaborSlot(i, si, $event)"
                         [disabled]="saving">
-                        @for (sabor of sabores; track sabor.id) {
+                        @for (sabor of saboresDoItem(i); track sabor.id) {
                           <mat-chip-option [value]="sabor.id" color="primary">{{ sabor.nome }}</mat-chip-option>
                         }
                       </mat-chip-listbox>
@@ -112,7 +112,7 @@
             <span class="calculo-label">Doação</span>
             <div class="calculo-input-wrap">
               <span class="calculo-prefix">R$</span>
-              <input class="calculo-input" type="number" min="0" step="0.01"
+              <input class="calculo-input" type="number" min="0" step="1"
                      [(ngModel)]="doacao" [disabled]="saving"
                      (blur)="doacao = doacao != null ? +doacao.toFixed(2) : null">
             </div>
@@ -133,7 +133,7 @@
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Valor pago (R$)</mat-label>
             <mat-icon matPrefix>payments</mat-icon>
-            <input matInput type="number" min="0" step="0.01" [(ngModel)]="valorPago" [disabled]="saving">
+            <input matInput type="number" min="0" step="1" [(ngModel)]="valorPago" [disabled]="saving">
           </mat-form-field>
 
           @if (saldo !== null) {

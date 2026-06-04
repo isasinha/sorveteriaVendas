@@ -37,6 +37,7 @@ export class ConsultarPedidosComponent implements OnInit {
   readonly filtrosDisponiveis: FiltroConsultar[] = this.authService.getPerfil()?.filtrosVisiveis ?? FILTROS_CONSULTAR.map(f => f.chave);
   readonly FILTROS_CONSULTAR = FILTROS_CONSULTAR;
   readonly isAtendimento = this.authService.getPerfil()?.nome?.trim().toLowerCase() === 'atendimento';
+  readonly currentUserEmail = this.authService.getCurrentUser()?.email ?? null;
   readonly isMontagem = this.authService.getPerfil()?.nome?.trim().toLowerCase().includes('montagem') ?? false;
 
   readonly STATUS_LABEL = STATUS_LABEL;
@@ -53,13 +54,17 @@ export class ConsultarPedidosComponent implements OnInit {
   entregandoId: string | null = null;
 
   get pedidosFiltrados(): Pedido[] {
-    let lista: Pedido[];
-    switch (this.filtro) {
-      case 'cancelados':    lista = this.pedidos.filter(p => this.isEncerrado(p)); break;
-      case 'em-preparacao': lista = this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && !p.entregue); break;
-      case 'concluidos':    lista = this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && p.entregue); break;
-      case 'nao-pagos':     lista = this.pedidos.filter(p => !this.isEncerrado(p) && !p.pago); break;
-      default:              lista = this.pedidos;
+    let lista: Pedido[] = this.isAtendimento
+      ? this.pedidos.filter(p => !p.pago && !this.isEncerrado(p) && p.criadoPorEmail === this.currentUserEmail)
+      : this.pedidos;
+    if (!this.isAtendimento) {
+      switch (this.filtro) {
+        case 'cancelados':    lista = this.pedidos.filter(p => this.isEncerrado(p)); break;
+        case 'em-preparacao': lista = this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && !p.entregue); break;
+        case 'concluidos':    lista = this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && p.entregue); break;
+        case 'nao-pagos':     lista = this.pedidos.filter(p => !this.isEncerrado(p) && !p.pago); break;
+        default:              lista = this.pedidos;
+      }
     }
     const termo = this.busca.trim().toLowerCase();
     if (!termo) return lista;

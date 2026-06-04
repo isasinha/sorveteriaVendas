@@ -183,8 +183,9 @@ export class NovoPedidoComponent implements OnInit {
         };
       });
       const totalPedido = this.total;
+      const criadoPorEmail = this.authService.getCurrentUser()?.email ?? undefined;
 
-      const { id: pedidoId, numero } = await this.pedidosService.addPedido({ nomeCliente, itens, total: totalPedido });
+      const { id: pedidoId, numero } = await this.pedidosService.addPedido({ nomeCliente, itens, total: totalPedido, criadoPorEmail });
 
       this.nomeCliente = '';
       this.pedidoItens = [];

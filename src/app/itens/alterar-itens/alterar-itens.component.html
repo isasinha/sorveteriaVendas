@@ -22,6 +22,12 @@
     }
   </div>
 
+  <div class="blocos-linha">
+    @for (config of blocosLinha3; track config.col) {
+      <ng-container *ngTemplateOutlet="blocoCard; context: { config }"></ng-container>
+    }
+  </div>
+
   <!-- ── Permissões e Filtros por Perfil ──────────────────────── -->
   <mat-card class="permissoes-card">
     <div class="card-header">
@@ -164,8 +170,19 @@
               @if (config.temPreco)      { <col class="col-preco"> }
               @if (config.temQtdSabores) { <col class="col-qtd"> }
               @if (config.temQtdSabores) { <col class="col-sabores"> }
+              @if (config.temQtdSabores) { <col class="col-barracas"> }
               <col class="col-acoes">
             </colgroup>
+            <thead>
+              <tr class="header-row">
+                <th class="th-nome">Nome</th>
+                @if (config.temPreco)      { <th class="th-preco">Preço</th> }
+                @if (config.temQtdSabores) { <th class="th-qtd">Qtd.</th> }
+                @if (config.temQtdSabores) { <th class="th-sabores">Sabores</th> }
+                @if (config.temQtdSabores) { <th class="th-barracas">Barracas</th> }
+                <th class="th-acoes"></th>
+              </tr>
+            </thead>
             <tbody>
               @for (item of blocos[config.col].itens; track item.id) {
                 <tr class="item-row" [class.editing]="blocos[config.col].editingId === item.id">
@@ -182,8 +199,7 @@
                     @if (config.temPreco) {
                       <td>
                         <mat-form-field appearance="outline" class="edit-preco-field" subscriptSizing="dynamic">
-                          <span matTextPrefix>R$&nbsp;</span>
-                          <input matInput type="number" min="0" step="0.01"
+                          <input matInput type="number" min="0" step="1.00"
                                  [(ngModel)]="blocos[config.col].editingPreco"
                                  (keyup.enter)="salvarEdicao(config.col)"
                                  (keyup.escape)="cancelarEdicao(config.col)"
@@ -215,6 +231,18 @@
                         </mat-form-field>
                       </td>
                     }
+                    @if (config.temQtdSabores) {
+                      <td>
+                        <mat-form-field appearance="outline" class="edit-barracas-field" subscriptSizing="dynamic">
+                          <mat-label>Barracas</mat-label>
+                          <mat-select multiple [(ngModel)]="blocos[config.col].editingBarracasPermitidas">
+                            @for (b of barracas; track b.id) {
+                              <mat-option [value]="b.id">{{ b.nome }}</mat-option>
+                            }
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    }
                     <td class="cell-acoes">
                       <button mat-icon-button color="primary" matTooltip="Salvar"
                               (click)="salvarEdicao(config.col)"
@@ -237,14 +265,10 @@
                     @if (config.temQtdSabores) {
                       <td class="cell-sabores">{{ saboresNomesDoItem(item) }}</td>
                     }
+                    @if (config.temQtdSabores) {
+                      <td class="cell-barracas">{{ barracasNomesDoItem(item) }}</td>
+                    }
                     <td class="cell-acoes">
-                      @if (config.col === 'produtos') {
-                        <button mat-icon-button matTooltip="Sabores e barracas permitidos"
-                                [class.ativo]="blocos['produtos'].expandidoId === item.id"
-                                (click)="toggleExpandido(item.id)">
-                          <mat-icon>tune</mat-icon>
-                        </button>
-                      }
                       <button mat-icon-button matTooltip="Editar"
                               (click)="iniciarEdicao(config.col, item)"
                               [disabled]="blocos[config.col].deletingId !== null">
@@ -263,61 +287,7 @@
                   }
 
                 </tr>
-                @if (config.col === 'produtos' && blocos['produtos'].expandidoId === item.id) {
-                  <tr class="row-expandida">
-                    <td [attr.colspan]="2 + (config.temPreco ? 1 : 0) + (config.temQtdSabores ? 1 : 0)">
-                      <div class="painel-expandido">
-                        <div class="painel-secao">
-                          <span class="painel-titulo">Sabores permitidos</span>
-                          <div class="painel-checks">
-                            @for (s of sabores; track s.id) {
-                              <label class="check-label">
-                                <mat-checkbox
-                                  [checked]="isSaborPermitido(item.id, s.id)"
-                                  (change)="toggleSaborProduto(item.id, s.id)">
-                                  {{ s.nome }}
-                                </mat-checkbox>
-                              </label>
-                            }
-                            @if (sabores.length === 0) {
-                              <span class="painel-vazio">Nenhum sabor cadastrado</span>
-                            }
-                          </div>
-                        </div>
-                        <div class="painel-secao">
-                          <span class="painel-titulo">Barracas permitidas</span>
-                          <div class="painel-checks">
-                            @for (b of barracas; track b.id) {
-                              <label class="check-label">
-                                <mat-checkbox
-                                  [checked]="isBarracaPermitida(item.id, b.id)"
-                                  (change)="toggleBarracaProduto(item.id, b.id)">
-                                  {{ b.nome }}
-                                </mat-checkbox>
-                              </label>
-                            }
-                            @if (barracas.length === 0) {
-                              <span class="painel-vazio">Nenhuma barraca cadastrada</span>
-                            }
-                          </div>
-                        </div>
-                        <div class="painel-acoes">
-                          <button mat-stroked-button (click)="blocos['produtos'].expandidoId = null">Cancelar</button>
-                          <button mat-flat-button color="primary"
-                                  (click)="salvarSaboresBarracas(item.id)"
-                                  [disabled]="savingProdutoId === item.id">
-                            @if (savingProdutoId === item.id) {
-                              <mat-spinner diameter="16"></mat-spinner>
-                            } @else {
-                              <mat-icon>save</mat-icon>
-                            }
-                            Salvar
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                }
+
               }
             </tbody>
           </table>
@@ -342,7 +312,7 @@
             <mat-form-field appearance="outline" class="add-preco-field" subscriptSizing="dynamic">
               <mat-label>Preço</mat-label>
               <span matTextPrefix>R$&nbsp;</span>
-              <input matInput type="number" min="0" step="0.01"
+              <input matInput type="number" min="0" step="1.00"
                      [(ngModel)]="blocos[config.col].novoPreco"
                      (keyup.enter)="adicionar(config.col)"
                      [disabled]="blocos[config.col].saving"

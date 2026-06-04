@@ -125,6 +125,7 @@ export class PedidosService {
                 pago: (data['pago'] as boolean) ?? false,
                 cancelado: (data['cancelado'] as boolean) ?? false,
                 naoRetirado: (data['naoRetirado'] as boolean) ?? false,
+                criadoPorEmail: data['criadoPorEmail'] as string | undefined,
               };
             })
         );

@@ -53,6 +53,7 @@ export class AlterarPedidoComponent implements OnInit {
 
   private saboresMap = new Map<string, ItemBase>();
   private adicionaisMap = new Map<string, ItemBase>();
+  private produtosMap = new Map<string, ItemBase>();
 
   loading = true;
   saving = false;
@@ -84,16 +85,25 @@ export class AlterarPedidoComponent implements OnInit {
     combineLatest([
       this.itensService.getItens('sabores'),
       this.itensService.getItens('adicionais'),
+      this.itensService.getItens('produtos'),
     ]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: ([sabores, adicionais]) => {
+      next: ([sabores, adicionais, produtos]) => {
         this.sabores = sabores;
         this.adicionais = adicionais;
         this.saboresMap = new Map(sabores.map(s => [s.id, s]));
         this.adicionaisMap = new Map(adicionais.map(a => [a.id, a]));
+        this.produtosMap = new Map(produtos.map(p => [p.id, p]));
         this.loading = false;
       },
       error: () => { this.loading = false; this.erro = 'Erro ao carregar dados.'; },
     });
+  }
+
+  saboresDoItem(i: number): ItemBase[] {
+    const tipo = this.produtosMap.get(this.pedidoItens[i].tipoId);
+    if (tipo?.saboresPermitidos === undefined) return this.sabores;
+    if (tipo.saboresPermitidos.length === 0) return [];
+    return this.sabores.filter(s => tipo.saboresPermitidos!.includes(s.id));
   }
 
   incrementarQtd(i: number): void {
