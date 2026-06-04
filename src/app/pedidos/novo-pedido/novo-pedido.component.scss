@@ -56,9 +56,26 @@
   align-items: flex-start;
   margin-bottom: var(--spacing-xl);
 
-  .numero-field {
-    width: 160px;
+  .numero-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 56px;
+    padding: 0 4px;
     flex-shrink: 0;
+    color: var(--color-text-secondary);
+
+    mat-icon {
+      font-size: 20px;
+      height: 20px;
+      width: 20px;
+    }
+
+    .numero-valor {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      color: var(--color-text);
+    }
   }
 
   .nome-field { flex: 1; }
@@ -94,7 +111,6 @@
 
   @include responsive(mobile) {
     flex-direction: column;
-    .numero-field { width: 100%; }
   }
 }
 

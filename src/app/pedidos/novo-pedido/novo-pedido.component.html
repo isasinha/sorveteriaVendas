@@ -17,11 +17,11 @@
   } @else {
 
     <div class="pedido-meta">
-      <mat-form-field appearance="outline" class="numero-field" subscriptSizing="dynamic">
-        <mat-label>Nº do Pedido</mat-label>
-        <mat-icon matPrefix>tag</mat-icon>
-        <input matInput [value]="numeroPedido" readonly>
-      </mat-form-field>
+      <div class="numero-label">
+        &nbsp;
+        <mat-icon>tag</mat-icon>
+        <span class="numero-valor">{{ numeroPedido }}</span>
+      </div>
       <mat-form-field appearance="outline" class="nome-field" subscriptSizing="dynamic">
         <mat-label>Nome do Cliente</mat-label>
         <mat-icon matPrefix>person</mat-icon>

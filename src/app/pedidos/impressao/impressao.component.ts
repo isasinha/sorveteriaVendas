@@ -45,8 +45,14 @@ export class ImpressaoComponent implements OnInit {
     this.origem = state.origem ?? '/pedidos/novo';
     this.itensExpandidos = state.itens.flatMap(item => Array(item.quantidade).fill(item));
 
-    const qrText = `Pedido #${this.numero}\n${this.nomeCliente}`;
-    QRCode.toDataURL(qrText, { width: 180, margin: 1, color: { dark: '#000', light: '#fff' } })
+    const linhasItens = state.itens.map(item => {
+      const partes = [`${item.quantidade}x ${item.tipoNome}`];
+      if (item.saboresNomes.length > 0) partes.push(item.saboresNomes.join(', '));
+      if (item.adicionaisNomes.length > 0) partes.push(`+${item.adicionaisNomes.join(', ')}`);
+      return partes.join(' | ');
+    });
+    const qrText = [`Pedido #${this.numero}`, this.nomeCliente, ...linhasItens].join('\n');
+    QRCode.toDataURL(qrText, { width: 220, margin: 1, color: { dark: '#000', light: '#fff' } })
       .then(url => {
         this.qrDataUrl = url;
         setTimeout(() => window.print(), 400);
