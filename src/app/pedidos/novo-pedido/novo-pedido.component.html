@@ -27,7 +27,25 @@
         <mat-icon matPrefix>person</mat-icon>
         <input matInput [(ngModel)]="nomeCliente" [disabled]="saving">
       </mat-form-field>
+      @if (podeVerTodasBarracas) {
+        <div class="barraca-select-wrapper">
+          <mat-icon>store</mat-icon>
+          <select [(ngModel)]="barracaIdSelecionada" (ngModelChange)="onBarracaChange()" [disabled]="saving">
+            <option value="">Todas as barracas</option>
+            @for (entry of barracasMap | keyvalue; track entry.key) {
+              <option [value]="entry.key">{{ entry.value }}</option>
+            }
+          </select>
+        </div>
+      }
     </div>
+
+    @if (podeVerTodasBarracas && !barracaIdSelecionada) {
+      <div class="sem-barraca-hint">
+        <mat-icon>store</mat-icon>
+        <span>Escolha uma barraca para cadastrar um novo pedido</span>
+      </div>
+    } @else {
 
     <!-- Lista de itens adicionados -->
     @if (pedidoItens.length > 0) {
@@ -70,7 +88,7 @@
             [ngModel]="itemAtual.tipoId"
             (ngModelChange)="itemAtual.tipoId = $event; onTipoChange()"
             [disabled]="saving">
-            @for (tipo of tipos; track tipo.id) {
+            @for (tipo of tiposFiltrados; track tipo.id) {
               <mat-chip-option [value]="tipo.id" color="primary">
                 {{ tipo.nome }}
                 @if (tipo.preco != null) {
@@ -150,6 +168,8 @@
         </span>
       </button>
     </div>
+
+    }<!-- fim @else barraca selecionada -->
 
   }
 </div>

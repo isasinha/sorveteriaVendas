@@ -53,6 +53,12 @@ export class LoginComponent {
         return;
       }
 
+      if (perfil.escopo !== 'todas' && !perfil.idBarraca) {
+        await this.authService.logout();
+        this.errorMessage = 'Usuário sem barraca atribuída. Contacte o administrador.';
+        return;
+      }
+
       this.router.navigate(['/menu']);
     } catch (error: any) {
       this.errorMessage = error.message || 'Erro ao fazer login';

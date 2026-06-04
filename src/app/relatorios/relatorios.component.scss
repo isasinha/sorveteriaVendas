@@ -22,3 +22,34 @@
     }
   }
 }
+
+.filtro-barraca {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid #d0d0d0;
+  border-radius: 20px;
+  padding: 0 14px;
+  height: 36px;
+  min-width: 200px;
+  margin-bottom: var(--spacing-xl);
+  width: fit-content;
+
+  mat-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+    color: var(--color-primary);
+  }
+
+  select {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    flex: 1;
+  }
+}

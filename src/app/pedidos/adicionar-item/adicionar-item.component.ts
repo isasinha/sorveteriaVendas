@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { combineLatest } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -30,6 +30,7 @@ export class AdicionarItemComponent implements OnInit {
   private dialogRef = inject(MatDialogRef<AdicionarItemComponent>);
   private itensService = inject(ItensService);
   private destroyRef = inject(DestroyRef);
+  private data = inject<{ barracaId?: string }>(MAT_DIALOG_DATA, { optional: true });
 
   readonly formatPreco = formatPreco;
 
@@ -52,6 +53,15 @@ export class AdicionarItemComponent implements OnInit {
     return !!this.tipoId &&
       (this.saboresIds.length === 0 || this.saboresIds.every(s => s !== null)) &&
       this.quantidade > 0;
+  }
+
+  get tiposFiltrados(): ItemBase[] {
+    const barracaId = this.data?.barracaId;
+    if (!barracaId) return this.tipos;
+    return this.tipos.filter(tipo => {
+      if (!tipo.barracasPermitidas || tipo.barracasPermitidas.length === 0) return true;
+      return tipo.barracasPermitidas.includes(barracaId);
+    });
   }
 
   ngOnInit(): void {

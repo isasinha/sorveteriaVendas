@@ -141,7 +141,11 @@ export class AlterarPedidoComponent implements OnInit {
   }
 
   async abrirAdicionarItem(): Promise<void> {
-    const ref = this.dialog.open(AdicionarItemComponent, { width: '520px', maxHeight: '90vh' });
+    const ref = this.dialog.open(AdicionarItemComponent, {
+      width: '520px',
+      maxHeight: '90vh',
+      data: { barracaId: this.pedido.barracaId },
+    });
     const novoItem: ItemPedido | undefined = await firstValueFrom(ref.afterClosed());
     if (novoItem) this.pedidoItens.push(novoItem);
   }

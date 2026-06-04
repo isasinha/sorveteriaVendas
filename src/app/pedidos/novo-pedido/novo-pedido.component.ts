@@ -1,4 +1,5 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { KeyValuePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { combineLatest } from 'rxjs';
@@ -34,7 +35,8 @@ interface ItemForm {
     FormsModule,
     MatCardModule, MatButtonModule, MatIconModule,
     MatFormFieldModule, MatInputModule, MatChipsModule,
-    MatProgressSpinnerModule, MatTooltipModule
+    MatProgressSpinnerModule, MatTooltipModule,
+    KeyValuePipe
   ],
   templateUrl: './novo-pedido.component.html',
   styleUrl: './novo-pedido.component.scss'
@@ -48,9 +50,12 @@ export class NovoPedidoComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
 
   readonly formatPreco = formatPreco;
+  readonly podeVerTodasBarracas = this.authService.getPerfil()?.escopo === 'todas';
 
   numeroPedido = 0;
   nomeCliente = '';
+  barracasMap = new Map<string, string>();
+  barracaIdSelecionada: string = this.authService.getPerfil()?.idBarraca ?? '';
 
   pedidoItens: ItemForm[] = [];
   itemAtual: ItemForm = { tipoId: '', saboresIds: [], adicionaisIds: [], quantidade: 1 };
@@ -90,14 +95,16 @@ export class NovoPedidoComponent implements OnInit {
       this.itensService.getItens('produtos'),
       this.itensService.getItens('sabores'),
       this.itensService.getItens('adicionais'),
+      this.itensService.getItens('barracas'),
     ]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: ([tipos, sabores, adicionais]) => {
+      next: ([tipos, sabores, adicionais, barracas]) => {
         this.tipos = tipos;
         this.sabores = sabores;
         this.adicionais = adicionais;
         this.tiposMap = new Map(tipos.map(t => [t.id, t]));
         this.saboresMap = new Map(sabores.map(s => [s.id, s]));
         this.adicionaisMap = new Map(adicionais.map(a => [a.id, a]));
+        this.barracasMap = new Map(barracas.map(b => [b.id, b.nome]));
         this.loading = false;
       },
       error: () => {
@@ -105,6 +112,19 @@ export class NovoPedidoComponent implements OnInit {
         this.erro = 'Erro ao carregar dados.';
       }
     });
+  }
+
+  get tiposFiltrados(): ItemBase[] {
+    if (!this.barracaIdSelecionada) return this.tipos;
+    return this.tipos.filter(tipo => {
+      if (!tipo.barracasPermitidas || tipo.barracasPermitidas.length === 0) return true;
+      return tipo.barracasPermitidas.includes(this.barracaIdSelecionada);
+    });
+  }
+
+  onBarracaChange(): void {
+    this.pedidoItens = [];
+    this.itemAtual = { tipoId: '', saboresIds: [], adicionaisIds: [], quantidade: 1 };
   }
 
   onTipoChange(): void {
@@ -184,8 +204,11 @@ export class NovoPedidoComponent implements OnInit {
       });
       const totalPedido = this.total;
       const criadoPorEmail = this.authService.getCurrentUser()?.email ?? undefined;
+      const barracaId = this.podeVerTodasBarracas
+        ? (this.barracaIdSelecionada || undefined)
+        : (this.authService.getPerfil()?.idBarraca ?? undefined);
 
-      const { id: pedidoId, numero } = await this.pedidosService.addPedido({ nomeCliente, itens, total: totalPedido, criadoPorEmail });
+      const { id: pedidoId, numero } = await this.pedidosService.addPedido({ nomeCliente, itens, total: totalPedido, criadoPorEmail, barracaId });
 
       this.nomeCliente = '';
       this.pedidoItens = [];

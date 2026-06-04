@@ -15,7 +15,7 @@
       <mat-chip-listbox
         [ngModel]="tipoId"
         (ngModelChange)="tipoId = $event; onTipoChange()">
-        @for (tipo of tipos; track tipo.id) {
+        @for (tipo of tiposFiltrados; track tipo.id) {
           <mat-chip-option [value]="tipo.id" color="primary">
             {{ tipo.nome }}
             @if (tipo.preco != null) {

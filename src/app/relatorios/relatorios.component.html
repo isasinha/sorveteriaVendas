@@ -10,6 +10,18 @@
     </button>
   </div>
 
+  @if (podeVerTodasBarracas) {
+    <div class="filtro-barraca">
+      <mat-icon>store</mat-icon>
+      <select [(ngModel)]="barracaFiltro">
+        <option value="todas">Todas as barracas</option>
+        @for (entry of barracasMap | keyvalue; track entry.key) {
+          <option [value]="entry.key">{{ entry.value }}</option>
+        }
+      </select>
+    </div>
+  }
+
   <mat-card>
     <mat-card-content>
       <p>Funcionalidade de Relatórios será implementada aqui.</p>

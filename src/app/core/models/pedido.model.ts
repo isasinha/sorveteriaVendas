@@ -16,6 +16,7 @@ export interface NovoPedido {
   itens: ItemPedido[];
   total: number;
   criadoPorEmail?: string;
+  barracaId?: string;
 }
 
 export interface NovaDoacaoAvulsa {
@@ -37,6 +38,7 @@ export interface Pedido {
   cancelado?: boolean;
   naoRetirado?: boolean;
   criadoPorEmail?: string;
+  barracaId?: string;
 }
 
 export type StatusPedido = 'a-pagar' | 'em-preparacao' | 'concluido' | 'cancelado' | 'nao-retirado';

@@ -12,6 +12,17 @@
   </div>
 
   <div class="barra-consulta no-print">
+    @if (podeVerTodasBarracas) {
+      <div class="filtro-barraca">
+        <mat-icon>store</mat-icon>
+        <select [(ngModel)]="barracaFiltro">
+          <option value="todas">Todas as barracas</option>
+          @for (entry of barracasMap | keyvalue; track entry.key) {
+            <option [value]="entry.key">{{ entry.value }}</option>
+          }
+        </select>
+      </div>
+    }
     <div class="filtros">
       @for (f of FILTROS_CONSULTAR; track f.chave) {
         @if (filtrosDisponiveis.includes(f.chave)) {
@@ -51,6 +62,12 @@
             <span class="data">{{ formatData(pedido.data) }}</span>
             <span class="hora">{{ formatHora(pedido.data) }}</span>
           </div>
+          @if (nomeBarraca(pedido); as barraca) {
+            <div class="barraca-badge">
+              <mat-icon>store</mat-icon>
+              {{ barraca }}
+            </div>
+          }
           @if (!pedido.cancelado && !pedido.naoRetirado && status === 'alerta') {
             <div class="status-icon" title="Pedido aguardando há mais de 15 minutos">
               <mat-icon>warning</mat-icon>

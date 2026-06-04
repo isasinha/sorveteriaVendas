@@ -126,6 +126,7 @@ export class PedidosService {
                 cancelado: (data['cancelado'] as boolean) ?? false,
                 naoRetirado: (data['naoRetirado'] as boolean) ?? false,
                 criadoPorEmail: data['criadoPorEmail'] as string | undefined,
+                barracaId: data['barracaId'] as string | undefined,
               };
             })
         );

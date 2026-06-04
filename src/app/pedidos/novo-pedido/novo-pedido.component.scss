@@ -27,6 +27,25 @@
   padding: var(--spacing-3xl) 0;
 }
 
+.sem-barraca-hint {
+  @include flex-center;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-3xl) 0;
+  color: var(--color-text-secondary);
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    opacity: 0.4;
+  }
+
+  span {
+    font-size: var(--font-size-md);
+  }
+}
+
 // ──────────────────────────────────────────────
 // Cabeçalho do pedido
 // ──────────────────────────────────────────────
@@ -43,6 +62,35 @@
   }
 
   .nome-field { flex: 1; }
+
+  .barraca-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1.5px solid rgba(0,0,0,0.23);
+    border-radius: 4px;
+    padding: 0 12px;
+    height: 56px;
+    background: #fff;
+    min-width: 160px;
+
+    mat-icon {
+      font-size: 20px;
+      height: 20px;
+      width: 20px;
+      color: var(--color-primary);
+    }
+
+    select {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 14px;
+      color: rgba(0,0,0,0.87);
+      cursor: pointer;
+      flex: 1;
+    }
+  }
 
   @include responsive(mobile) {
     flex-direction: column;

@@ -1,4 +1,5 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { KeyValuePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { interval, firstValueFrom } from 'rxjs';
@@ -10,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PedidosService } from '../../core/services/pedidos.service';
 import { AuthService } from '../../core/services/auth.service';
+import { ItensService } from '../../core/services/itens.service';
 import { Pedido, STATUS_ICON, STATUS_LABEL, getStatusPedido, resumoItemPedido } from '../../core/models/pedido.model';
 import { DetalhePedidoComponent } from '../detalhe-pedido/detalhe-pedido.component';
 import { PagamentoComponent } from '../pagamento/pagamento.component';
@@ -23,7 +25,7 @@ type Status = 'normal' | 'alerta' | 'critico';
 @Component({
   selector: 'app-consultar-pedidos',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule],
+  imports: [MatCardModule, MatButtonModule, MatIconModule, MatTooltipModule, FormsModule, KeyValuePipe],
   templateUrl: './consultar-pedidos.component.html',
   styleUrl: './consultar-pedidos.component.scss'
 })
@@ -32,6 +34,7 @@ export class ConsultarPedidosComponent implements OnInit {
   private dialog = inject(MatDialog);
   private pedidosService = inject(PedidosService);
   private authService = inject(AuthService);
+  private itensService = inject(ItensService);
   private destroyRef = inject(DestroyRef);
 
   readonly filtrosDisponiveis: FiltroConsultar[] = this.authService.getPerfil()?.filtrosVisiveis ?? FILTROS_CONSULTAR.map(f => f.chave);
@@ -39,6 +42,11 @@ export class ConsultarPedidosComponent implements OnInit {
   readonly isAtendimento = this.authService.getPerfil()?.nome?.trim().toLowerCase() === 'atendimento';
   readonly currentUserEmail = this.authService.getCurrentUser()?.email ?? null;
   readonly isMontagem = this.authService.getPerfil()?.nome?.trim().toLowerCase().includes('montagem') ?? false;
+  readonly perfilEscopo = this.authService.getPerfil()?.escopo ?? 'propria';
+  readonly perfilBarracaId = this.authService.getPerfil()?.idBarraca ?? null;
+  readonly podeVerTodasBarracas = this.perfilEscopo === 'todas';
+
+  barracaFiltro: string = 'todas';
 
   readonly STATUS_LABEL = STATUS_LABEL;
   readonly STATUS_ICON = STATUS_ICON;
@@ -48,22 +56,30 @@ export class ConsultarPedidosComponent implements OnInit {
   readonly resumoItemPedido = resumoItemPedido;
 
   pedidos: Pedido[] = [];
+  barracasMap = new Map<string, string>(); // id → nome
   agora = Date.now();
   filtro: FiltroConsultar = this.filtrosDisponiveis[0] ?? 'todos';
   busca = '';
   entregandoId: string | null = null;
 
+  private pedidosDaBarraca(): Pedido[] {
+    if (this.perfilEscopo !== 'todas') return this.pedidos.filter(p => p.barracaId === this.perfilBarracaId);
+    if (this.barracaFiltro === 'todas') return this.pedidos;
+    return this.pedidos.filter(p => p.barracaId === this.barracaFiltro);
+  }
+
   get pedidosFiltrados(): Pedido[] {
-    let lista: Pedido[] = this.isAtendimento
-      ? this.pedidos.filter(p => !p.pago && !this.isEncerrado(p) && p.criadoPorEmail === this.currentUserEmail)
-      : this.pedidos;
+    const base = this.isAtendimento
+      ? this.pedidosDaBarraca().filter(p => !p.pago && !this.isEncerrado(p) && p.criadoPorEmail === this.currentUserEmail)
+      : this.pedidosDaBarraca();
+    let lista = base;
     if (!this.isAtendimento) {
       switch (this.filtro) {
-        case 'cancelados':    lista = this.pedidos.filter(p => this.isEncerrado(p)); break;
-        case 'em-preparacao': lista = this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && !p.entregue); break;
-        case 'concluidos':    lista = this.pedidos.filter(p => !this.isEncerrado(p) && p.pago && p.entregue); break;
-        case 'nao-pagos':     lista = this.pedidos.filter(p => !this.isEncerrado(p) && !p.pago); break;
-        default:              lista = this.pedidos;
+        case 'cancelados':    lista = base.filter(p => this.isEncerrado(p)); break;
+        case 'em-preparacao': lista = base.filter(p => !this.isEncerrado(p) && p.pago && !p.entregue); break;
+        case 'concluidos':    lista = base.filter(p => !this.isEncerrado(p) && p.pago && p.entregue); break;
+        case 'nao-pagos':     lista = base.filter(p => !this.isEncerrado(p) && !p.pago); break;
+        default:              lista = base;
       }
     }
     const termo = this.busca.trim().toLowerCase();
@@ -79,9 +95,19 @@ export class ConsultarPedidosComponent implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(p => this.pedidos = p);
 
+    this.itensService.getItens('barracas')
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(b => this.barracasMap = new Map(b.map(x => [x.id, x.nome])));
+
     interval(30_000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (this.pedidos.some(p => !p.entregue)) this.agora = Date.now();
     });
+  }
+
+  nomeBarraca(pedido: Pedido): string | null {
+    if (this.perfilEscopo !== 'todas') return null;
+    if (!pedido.barracaId) return null;
+    return this.barracasMap.get(pedido.barracaId) ?? null;
   }
 
   getStatus(pedido: Pedido): Status {

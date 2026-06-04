@@ -72,6 +72,7 @@ export class AuthService {
       if (snap.empty) { this.perfilSubject.next(null); return; }
 
       const pessoa = snap.docs[0].data();
+      const idBarraca = pessoa['idBarraca'] as string | undefined;
       if (!pessoa['idPerfil']) { this.perfilSubject.next(null); return; }
 
       const perfilSnap = await getDoc(doc(db, 'perfis', pessoa['idPerfil']));
@@ -87,7 +88,7 @@ export class AuthService {
         ? undefined
         : (dados['filtrosVisiveis'] as FiltroConsultar[] | undefined) ?? undefined;
 
-      this.perfilSubject.next({ id: perfilSnap.id, nome, permissoes, escopo, filtrosVisiveis });
+      this.perfilSubject.next({ id: perfilSnap.id, nome, permissoes, escopo, filtrosVisiveis, idBarraca });
     } catch {
       this.perfilSubject.next(null);
     }

@@ -65,6 +65,35 @@
   }
 }
 
+.filtro-barraca {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1.5px solid #d0d0d0;
+  border-radius: 20px;
+  padding: 0 14px;
+  height: 36px;
+  min-width: 180px;
+
+  mat-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+    color: var(--color-primary);
+  }
+
+  select {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    flex: 1;
+  }
+}
+
 .busca-wrapper {
   display: flex;
   align-items: center;
@@ -197,6 +226,26 @@
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
+}
+
+.barraca-badge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-primary, #1565c0);
+  background: color-mix(in srgb, var(--color-primary, #1565c0) 12%, transparent);
+  border-radius: 10px;
+  padding: 2px 7px 2px 4px;
+  white-space: nowrap;
+
+  mat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+  }
 }
 
 .numero {

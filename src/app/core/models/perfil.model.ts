@@ -33,6 +33,7 @@ export interface PerfilCompleto {
   permissoes?: Funcionalidade[];
   escopo?: EscopoBarraca;
   filtrosVisiveis?: FiltroConsultar[];
+  idBarraca?: string;
 }
 
 export function isTI(nome: string): boolean {
