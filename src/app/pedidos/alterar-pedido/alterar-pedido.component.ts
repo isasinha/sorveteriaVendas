@@ -17,6 +17,7 @@ import { ItemBase } from '../../core/models/item.model';
 import { ItemPedido, Pedido, resumoItemPedido } from '../../core/models/pedido.model';
 import { formatPreco } from '../../core/utils/formatters';
 import { AdicionarItemComponent } from '../adicionar-item/adicionar-item.component';
+import { ConfirmacaoDialogComponent } from '../../shared/confirmacao-dialog/confirmacao-dialog.component';
 
 @Component({
   selector: 'app-alterar-pedido',
@@ -152,6 +153,19 @@ export class AlterarPedidoComponent implements OnInit {
 
   async salvar(): Promise<void> {
     if (!this.canSalvar) return;
+    if (this.saldo !== null && this.saldo < 0) {
+      const ref = this.dialog.open(ConfirmacaoDialogComponent, {
+        data: {
+          titulo: 'Valor insuficiente',
+          mensagem: `O cliente ainda deve ${this.formatPreco(-this.saldo)}. Deseja salvar mesmo assim?`,
+          labelSim: 'Sim, salvar',
+          labelNao: 'Voltar',
+        },
+        width: '380px',
+      });
+      const confirmar = await firstValueFrom(ref.afterClosed());
+      if (!confirmar) return;
+    }
     this.saving = true;
     this.erro = '';
     try {

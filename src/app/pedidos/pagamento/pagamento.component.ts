@@ -1,7 +1,8 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { firstValueFrom } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,6 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PedidosService } from '../../core/services/pedidos.service';
 import { ItemPedido, resumoItemPedido } from '../../core/models/pedido.model';
 import { formatPreco } from '../../core/utils/formatters';
+import { ConfirmacaoDialogComponent } from '../../shared/confirmacao-dialog/confirmacao-dialog.component';
 
 export interface PagamentoData {
   pedidoId: string;
@@ -36,6 +38,7 @@ export class PagamentoComponent {
   private dialogRef = inject(MatDialogRef<PagamentoComponent>);
   private pedidosService = inject(PedidosService);
   private router = inject(Router);
+  private dialog = inject(MatDialog);
 
   valorPago: number | null = null;
   doacao: number | null = null;
@@ -48,7 +51,7 @@ export class PagamentoComponent {
   }
 
   get canConfirmar(): boolean {
-    return this.valorPago != null && (this.troco ?? -1) >= 0;
+    return this.valorPago != null;
   }
 
   readonly getResumoItem = resumoItemPedido;
@@ -56,6 +59,19 @@ export class PagamentoComponent {
 
   async confirmar(): Promise<void> {
     if (!this.canConfirmar || this.saving) return;
+    if (this.troco !== null && this.troco < 0) {
+      const ref = this.dialog.open(ConfirmacaoDialogComponent, {
+        data: {
+          titulo: 'Valor insuficiente',
+          mensagem: `O valor pago é menor que o total. Ainda faltam ${this.formatPreco(-this.troco)}. Deseja confirmar mesmo assim?`,
+          labelSim: 'Sim, confirmar',
+          labelNao: 'Voltar',
+        },
+        width: '380px',
+      });
+      const ok = await firstValueFrom(ref.afterClosed());
+      if (!ok) return;
+    }
     this.saving = true;
     this.erro = '';
     try {

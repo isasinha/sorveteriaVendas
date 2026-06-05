@@ -3,7 +3,7 @@ import { db } from '../config/firebase.config';
 import {
   collection, addDoc, updateDoc, deleteDoc,
   doc, query, orderBy, onSnapshot, deleteField,
-  UpdateData
+  UpdateData, writeBatch
 } from 'firebase/firestore';
 import { Observable } from 'rxjs';
 import { ItemBase, ColecaoItens } from '../models/item.model';
@@ -24,6 +24,7 @@ export class ItensService {
             if (data['qtdSabores'] != null) item.qtdSabores = data['qtdSabores'] as number;
             if (data['saboresPermitidos'] != null) item.saboresPermitidos = data['saboresPermitidos'] as string[];
             if (data['barracasPermitidas'] != null) item.barracasPermitidas = data['barracasPermitidas'] as string[];
+            item.ativo = data['ativo'] !== false; // undefined = ativo por padrão
             return item;
           })
         ),
@@ -45,6 +46,20 @@ export class ItensService {
       }
     }
     await updateDoc(doc(db, colecao, id), data as UpdateData<object>);
+  }
+
+  async toggleAtivo(colecao: ColecaoItens, id: string, ativo: boolean): Promise<void> {
+    await updateDoc(doc(db, colecao, id), { ativo } as UpdateData<object>);
+  }
+
+  async removerItemDeProdutos(campo: 'saboresPermitidos' | 'barracasPermitidas', itemId: string, produtos: ItemBase[]): Promise<void> {
+    const batch = writeBatch(db);
+    for (const produto of produtos) {
+      const lista = produto[campo] as string[] | undefined;
+      if (!lista) continue;
+      batch.update(doc(db, 'produtos', produto.id), { [campo]: lista.filter(id => id !== itemId) });
+    }
+    await batch.commit();
   }
 
   async deleteItem(colecao: ColecaoItens, id: string): Promise<void> {

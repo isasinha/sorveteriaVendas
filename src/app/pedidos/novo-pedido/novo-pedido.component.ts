@@ -2,7 +2,7 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { KeyValuePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { combineLatest } from 'rxjs';
+import { combineLatest, firstValueFrom } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
@@ -19,6 +19,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ItemBase } from '../../core/models/item.model';
 import { ItemPedido } from '../../core/models/pedido.model';
 import { PagamentoComponent } from '../pagamento/pagamento.component';
+import { ConfirmacaoDialogComponent } from '../../shared/confirmacao-dialog/confirmacao-dialog.component';
 import { formatPreco } from '../../core/utils/formatters';
 
 interface ItemForm {
@@ -98,13 +99,13 @@ export class NovoPedidoComponent implements OnInit {
       this.itensService.getItens('barracas'),
     ]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ([tipos, sabores, adicionais, barracas]) => {
-        this.tipos = tipos;
-        this.sabores = sabores;
-        this.adicionais = adicionais;
+        this.tipos = tipos.filter(t => t.ativo !== false);
+        this.sabores = sabores.filter(s => s.ativo !== false);
+        this.adicionais = adicionais.filter(a => a.ativo !== false);
         this.tiposMap = new Map(tipos.map(t => [t.id, t]));
         this.saboresMap = new Map(sabores.map(s => [s.id, s]));
         this.adicionaisMap = new Map(adicionais.map(a => [a.id, a]));
-        this.barracasMap = new Map(barracas.map(b => [b.id, b.nome]));
+        this.barracasMap = new Map(barracas.filter(b => b.ativo !== false).map(b => [b.id, b.nome]));
         this.loading = false;
       },
       error: () => {
@@ -180,6 +181,20 @@ export class NovoPedidoComponent implements OnInit {
 
   async salvar(): Promise<void> {
     if (!this.canSalvar || this.saving) return;
+    if (this.itemAtual.tipoId) {
+      const tipoNome = this.tiposMap.get(this.itemAtual.tipoId)?.nome ?? 'item';
+      const ref = this.dialog.open(ConfirmacaoDialogComponent, {
+        data: {
+          titulo: 'Item não adicionado',
+          mensagem: `O item "${tipoNome}" foi selecionado mas não foi adicionado à lista. Deseja salvar o pedido sem ele?`,
+          labelSim: 'Sim, salvar sem o item',
+          labelNao: 'Voltar',
+        },
+        width: '400px',
+      });
+      const ok = await firstValueFrom(ref.afterClosed());
+      if (!ok) return;
+    }
     this.saving = true;
     this.erro = '';
     try {

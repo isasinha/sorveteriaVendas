@@ -136,6 +136,17 @@ export class ConsultarPedidosComponent implements OnInit {
 
   async entregar(pedido: Pedido): Promise<void> {
     if (this.entregandoId) return;
+    const ref = this.dialog.open(ConfirmacaoDialogComponent, {
+      data: {
+        titulo: 'Confirmar entrega',
+        mensagem: `Deseja marcar o pedido #${pedido.numero} de ${pedido.nomeCliente} como entregue?`,
+        labelSim: 'Sim, entregar',
+        labelNao: 'Cancelar',
+      },
+      width: '380px',
+    });
+    const confirmar = await firstValueFrom(ref.afterClosed());
+    if (!confirmar) return;
     this.entregandoId = pedido.id;
     try {
       await this.pedidosService.marcarEntregue(pedido.id);
@@ -164,6 +175,17 @@ export class ConsultarPedidosComponent implements OnInit {
         await this.pedidosService.marcarNaoRetirado(pedido.id);
       }
     } else {
+      const ref = this.dialog.open(ConfirmacaoDialogComponent, {
+        data: {
+          titulo: 'Cancelar pedido',
+          mensagem: `Deseja cancelar o pedido #${pedido.numero} de ${pedido.nomeCliente}?`,
+          labelSim: 'Sim, cancelar',
+          labelNao: 'Voltar',
+        },
+        width: '380px',
+      });
+      const confirmar = await firstValueFrom(ref.afterClosed());
+      if (!confirmar) return;
       await this.pedidosService.cancelarPedido(pedido.id);
     }
   }

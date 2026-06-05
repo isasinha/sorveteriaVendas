@@ -24,21 +24,10 @@
   .toolbar-left {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
 
-    .toolbar-icon {
-      font-size: 32px;
-      width: 32px;
-      height: 32px;
-    }
-
-    .toolbar-title {
-      font-size: 20px;
-      font-weight: 500;
-
-      @include responsive(mobile) {
-        font-size: 16px;
-      }
+    .toolbar-logo {
+      height: 44px;
+      width: auto;
     }
   }
 

@@ -1,7 +1,9 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { NgTemplateOutlet } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +19,7 @@ import { PessoasService } from '../../core/services/pessoas.service';
 import { ItemBase, ColecaoItens } from '../../core/models/item.model';
 import { PerfilCompleto, Funcionalidade, FUNCIONALIDADES, FiltroConsultar, FILTROS_CONSULTAR, isTI, EscopoBarraca } from '../../core/models/perfil.model';
 import { formatPreco } from '../../core/utils/formatters';
+import { ConfirmacaoDialogComponent } from '../../shared/confirmacao-dialog/confirmacao-dialog.component';
 
 interface BlocoState {
   itens: ItemBase[];
@@ -33,7 +36,7 @@ interface BlocoState {
   editingQtdSabores: number | null;
   editingSaboresPermitidos: string[];
   editingBarracasPermitidas: string[];
-  deletingId: string | null;
+  togglingId: string | null;
   erro: string;
   expandidoId: string | null; // painel de sabores/barracas aberto
 }
@@ -63,6 +66,7 @@ interface BlocoConfig {
 })
 export class AlterarItensComponent implements OnInit {
   private router = inject(Router);
+  private dialog = inject(MatDialog);
   private itensService = inject(ItensService);
   private pessoasService = inject(PessoasService);
   private destroyRef = inject(DestroyRef);
@@ -99,6 +103,9 @@ export class AlterarItensComponent implements OnInit {
 
   get sabores(): ItemBase[] { return this.blocos['sabores']?.itens ?? []; }
   get barracas(): ItemBase[] { return this.blocos['barracas']?.itens ?? []; }
+  get adicionaisAtivos(): ItemBase[] { return this.blocos['adicionais']?.itens.filter(a => a.ativo !== false) ?? []; }
+  get saboresAtivos(): ItemBase[] { return this.sabores.filter(s => s.ativo !== false); }
+  get barracasAtivas(): ItemBase[] { return this.barracas.filter(b => b.ativo !== false); }
 
   saboresNomesDoItem(item: ItemBase): string {
     if (item.saboresPermitidos === undefined) return 'Todos';
@@ -200,7 +207,7 @@ export class AlterarItensComponent implements OnInit {
   erroTabela = '';
 
   private novoBloco(): BlocoState {
-    return { itens: [], loading: true, novoNome: '', novoPreco: null, novoQtdSabores: null, novoSaboresPermitidos: [], novoBarracasPermitidas: [], saving: false, editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], editingBarracasPermitidas: [], deletingId: null, erro: '', expandidoId: null };
+    return { itens: [], loading: true, novoNome: '', novoPreco: null, novoQtdSabores: null, novoSaboresPermitidos: [], novoBarracasPermitidas: [], saving: false, editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], editingBarracasPermitidas: [], togglingId: null, erro: '', expandidoId: null };
   }
 
   ngOnInit(): void {
@@ -232,9 +239,33 @@ export class AlterarItensComponent implements OnInit {
       });
   }
 
+  onQtdSaboresChange(col: ColecaoItens, modo: 'novo' | 'edicao', valor: number | null): void {
+    if ((valor ?? 0) === 0) {
+      if (modo === 'novo') this.blocos[col].novoSaboresPermitidos = [];
+      else this.blocos[col].editingSaboresPermitidos = [];
+    }
+  }
+
+  canAdicionar(col: ColecaoItens): boolean {
+    const b = this.blocos[col];
+    const config = this.blocosConfig.find(c => c.col === col);
+    if (!b.novoNome.trim()) return false;
+    if (config?.temPreco && b.novoPreco == null) return false;
+    if (config?.temQtdSabores && b.novoQtdSabores == null) return false;
+    if (config?.temQtdSabores && (b.novoQtdSabores ?? 0) > 0 && b.novoSaboresPermitidos.length === 0) return false;
+    if (config?.temQtdSabores && this.barracasAtivas.length > 0 && b.novoBarracasPermitidas.length === 0) return false;
+    return true;
+  }
+
   async adicionar(col: ColecaoItens): Promise<void> {
     const b = this.blocos[col];
-    if (!b.novoNome.trim() || b.saving) return;
+    if (!this.canAdicionar(col) || b.saving) return;
+    const nomeNormalizado = b.novoNome.trim().toLowerCase();
+    const duplicado = b.itens.some(i => i.nome.trim().toLowerCase() === nomeNormalizado);
+    if (duplicado) {
+      b.erro = `Já existe um item com o nome "${b.novoNome.trim()}".`;
+      return;
+    }
     b.saving = true;
     b.erro = '';
     try {
@@ -276,7 +307,18 @@ export class AlterarItensComponent implements OnInit {
 
   async salvarEdicao(col: ColecaoItens): Promise<void> {
     const b = this.blocos[col];
+    const config = this.blocosConfig.find(c => c.col === col);
     if (!b.editingId || !b.editingNome.trim() || b.saving) return;
+    if (config?.temPreco && b.editingPreco == null) return;
+    if (config?.temQtdSabores && b.editingQtdSabores == null) return;
+    if (config?.temQtdSabores && (b.editingQtdSabores ?? 0) > 0 && b.editingSaboresPermitidos.length === 0) return;
+    if (config?.temQtdSabores && this.barracasAtivas.length > 0 && b.editingBarracasPermitidas.length === 0) return;
+    const nomeNormalizado = b.editingNome.trim().toLowerCase();
+    const duplicado = b.itens.some(i => i.id !== b.editingId && i.nome.trim().toLowerCase() === nomeNormalizado);
+    if (duplicado) {
+      b.erro = `Já existe um item com o nome "${b.editingNome.trim()}".`;
+      return;
+    }
     b.saving = true;
     b.erro = '';
     try {
@@ -306,16 +348,56 @@ export class AlterarItensComponent implements OnInit {
     }
   }
 
-  async deletar(col: ColecaoItens, id: string): Promise<void> {
+  async toggleAtivo(col: ColecaoItens, item: ItemBase): Promise<void> {
+    const ativar = !(item.ativo ?? true);
+    const acao = ativar ? 'ativar' : 'desativar';
+
+    let produtosAfetados: ItemBase[] = [];
+    let campoProduto: 'saboresPermitidos' | 'barracasPermitidas' | null = null;
+
+    if (!ativar) {
+      if (col === 'sabores') {
+        campoProduto = 'saboresPermitidos';
+        produtosAfetados = this.blocos['produtos'].itens.filter(p =>
+          Array.isArray(p.saboresPermitidos) && p.saboresPermitidos.includes(item.id)
+        );
+      } else if (col === 'barracas') {
+        campoProduto = 'barracasPermitidas';
+        produtosAfetados = this.blocos['produtos'].itens.filter(p =>
+          Array.isArray(p.barracasPermitidas) && p.barracasPermitidas.includes(item.id)
+        );
+      }
+    }
+
+    let mensagem = `Deseja ${acao} "${item.nome}"?`;
+    if (produtosAfetados.length > 0) {
+      const nomes = produtosAfetados.map(p => `"${p.nome}"`).join(', ');
+      mensagem += `\n\nAtenção: este item está associado aos produtos ${nomes}. Ao desativar, será removido da configuração desses produtos.`;
+    }
+
+    const ref = this.dialog.open(ConfirmacaoDialogComponent, {
+      data: {
+        titulo: ativar ? 'Ativar item' : 'Desativar item',
+        mensagem,
+        labelSim: `Sim, ${acao}`,
+        labelNao: 'Cancelar',
+      },
+      width: '420px',
+    });
+    const confirmar = await firstValueFrom(ref.afterClosed());
+    if (!confirmar) return;
     const b = this.blocos[col];
-    b.deletingId = id;
+    b.togglingId = item.id;
     b.erro = '';
     try {
-      await this.itensService.deleteItem(col, id);
+      await this.itensService.toggleAtivo(col, item.id, ativar);
+      if (campoProduto && produtosAfetados.length > 0) {
+        await this.itensService.removerItemDeProdutos(campoProduto, item.id, produtosAfetados);
+      }
     } catch {
-      b.erro = 'Erro ao excluir item.';
+      b.erro = 'Erro ao alterar status do item.';
     } finally {
-      b.deletingId = null;
+      b.togglingId = null;
     }
   }
 

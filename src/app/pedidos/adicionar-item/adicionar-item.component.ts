@@ -70,9 +70,9 @@ export class AdicionarItemComponent implements OnInit {
       this.itensService.getItens('sabores'),
       this.itensService.getItens('adicionais'),
     ]).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(([tipos, sabores, adicionais]) => {
-      this.tipos = tipos;
-      this.sabores = sabores;
-      this.adicionais = adicionais;
+      this.tipos = tipos.filter(t => t.ativo !== false);
+      this.sabores = sabores.filter(s => s.ativo !== false);
+      this.adicionais = adicionais.filter(a => a.ativo !== false);
       this.tiposMap = new Map(tipos.map(t => [t.id, t]));
       this.saboresMap = new Map(sabores.map(s => [s.id, s]));
       this.adicionaisMap = new Map(adicionais.map(a => [a.id, a]));

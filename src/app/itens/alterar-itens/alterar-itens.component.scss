@@ -174,10 +174,28 @@
 
   &.editing { background-color: var(--color-bg-active); }
 
+  &.inativo {
+    opacity: 0.5;
+  }
+
   td {
     padding: 4px 6px;
     vertical-align: middle;
   }
+}
+
+.badge-inativo {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  color: #fff;
+  background-color: var(--color-text-secondary);
+  border-radius: var(--radius-xl);
+  padding: 1px 6px;
+  vertical-align: middle;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .cell-nome {
@@ -192,7 +210,6 @@
   font-size: 13px;
   font-weight: var(--font-weight-medium);
   color: var(--color-primary);
-  background-color: var(--color-bg-active);
   border-radius: var(--radius-xl);
   text-align: center;
   padding: 2px 6px;
@@ -202,7 +219,6 @@
   font-size: 13px;
   font-weight: var(--font-weight-medium);
   color: var(--color-card-estoque);
-  background-color: var(--color-bg-active);
   border-radius: var(--radius-xl);
   text-align: center;
   padding: 2px 6px;

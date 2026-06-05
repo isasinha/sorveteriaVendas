@@ -173,19 +173,21 @@
               @if (config.temQtdSabores) { <col class="col-barracas"> }
               <col class="col-acoes">
             </colgroup>
-            <thead>
-              <tr class="header-row">
-                <th class="th-nome">Nome</th>
-                @if (config.temPreco)      { <th class="th-preco">Preço</th> }
-                @if (config.temQtdSabores) { <th class="th-qtd">Qtd.</th> }
-                @if (config.temQtdSabores) { <th class="th-sabores">Sabores</th> }
-                @if (config.temQtdSabores) { <th class="th-barracas">Barracas</th> }
-                <th class="th-acoes"></th>
-              </tr>
-            </thead>
+            @if (config.temQtdSabores) {
+              <thead>
+                <tr class="header-row">
+                  <th class="th-nome">Nome</th>
+                  <th class="th-preco">Preço</th>
+                  <th class="th-qtd">Qtd.</th>
+                  <th class="th-sabores">Sabores</th>
+                  <th class="th-barracas">Barracas</th>
+                  <th class="th-acoes"></th>
+                </tr>
+              </thead>
+            }
             <tbody>
               @for (item of blocos[config.col].itens; track item.id) {
-                <tr class="item-row" [class.editing]="blocos[config.col].editingId === item.id">
+                <tr class="item-row" [class.editing]="blocos[config.col].editingId === item.id" [class.inativo]="!(item.ativo ?? true)">
 
                   @if (blocos[config.col].editingId === item.id) {
                     <td>
@@ -210,8 +212,9 @@
                     @if (config.temQtdSabores) {
                       <td>
                         <mat-form-field appearance="outline" class="edit-qtd-field" subscriptSizing="dynamic">
-                          <input matInput type="number" min="1" step="1"
-                                 [(ngModel)]="blocos[config.col].editingQtdSabores"
+                          <input matInput type="number" min="0" step="1"
+                                 [ngModel]="blocos[config.col].editingQtdSabores"
+                                 (ngModelChange)="blocos[config.col].editingQtdSabores = $event; onQtdSaboresChange(config.col, 'edicao', $event)"
                                  (keyup.enter)="salvarEdicao(config.col)"
                                  (keyup.escape)="cancelarEdicao(config.col)"
                                  placeholder="Qtd">
@@ -224,7 +227,7 @@
                           <mat-label>Sabores</mat-label>
                           <mat-select multiple [(ngModel)]="blocos[config.col].editingSaboresPermitidos"
                                       [disabled]="blocos[config.col].editingQtdSabores === 0">
-                            @for (s of sabores; track s.id) {
+                            @for (s of saboresAtivos; track s.id) {
                               <mat-option [value]="s.id">{{ s.nome }}</mat-option>
                             }
                           </mat-select>
@@ -236,7 +239,7 @@
                         <mat-form-field appearance="outline" class="edit-barracas-field" subscriptSizing="dynamic">
                           <mat-label>Barracas</mat-label>
                           <mat-select multiple [(ngModel)]="blocos[config.col].editingBarracasPermitidas">
-                            @for (b of barracas; track b.id) {
+                            @for (b of barracasAtivas; track b.id) {
                               <mat-option [value]="b.id">{{ b.nome }}</mat-option>
                             }
                           </mat-select>
@@ -246,7 +249,7 @@
                     <td class="cell-acoes">
                       <button mat-icon-button color="primary" matTooltip="Salvar"
                               (click)="salvarEdicao(config.col)"
-                              [disabled]="blocos[config.col].saving">
+                              [disabled]="blocos[config.col].saving || !blocos[config.col].editingNome.trim() || (config.temPreco && blocos[config.col].editingPreco == null) || (config.temQtdSabores && blocos[config.col].editingQtdSabores == null) || (config.temQtdSabores && (blocos[config.col].editingQtdSabores ?? 0) > 0 && blocos[config.col].editingSaboresPermitidos.length === 0) || (config.temQtdSabores && barracasAtivas.length > 0 && blocos[config.col].editingBarracasPermitidas.length === 0)">
                         <mat-icon>check</mat-icon>
                       </button>
                       <button mat-icon-button matTooltip="Cancelar"
@@ -255,7 +258,12 @@
                       </button>
                     </td>
                   } @else {
-                    <td class="cell-nome">{{ item.nome }}</td>
+                    <td class="cell-nome">
+                        {{ item.nome }}
+                        @if (!(item.ativo ?? true)) {
+                          <span class="badge-inativo">inativo</span>
+                        }
+                      </td>
                     @if (config.temPreco) {
                       <td class="cell-preco">{{ item.preco != null ? formatPreco(item.preco) : '—' }}</td>
                     }
@@ -271,16 +279,18 @@
                     <td class="cell-acoes">
                       <button mat-icon-button matTooltip="Editar"
                               (click)="iniciarEdicao(config.col, item)"
-                              [disabled]="blocos[config.col].deletingId !== null">
+                              [disabled]="blocos[config.col].togglingId !== null">
                         <mat-icon>edit</mat-icon>
                       </button>
-                      <button mat-icon-button color="warn" matTooltip="Excluir"
-                              (click)="deletar(config.col, item.id)"
-                              [disabled]="blocos[config.col].deletingId === item.id">
-                        @if (blocos[config.col].deletingId === item.id) {
+                      <button mat-icon-button
+                              [color]="(item.ativo ?? true) ? 'warn' : 'primary'"
+                              [matTooltip]="(item.ativo ?? true) ? 'Desativar' : 'Ativar'"
+                              (click)="toggleAtivo(config.col, item)"
+                              [disabled]="blocos[config.col].togglingId === item.id">
+                        @if (blocos[config.col].togglingId === item.id) {
                           <mat-spinner diameter="16"></mat-spinner>
                         } @else {
-                          <mat-icon>delete</mat-icon>
+                          <mat-icon>{{ (item.ativo ?? true) ? 'block' : 'check_circle' }}</mat-icon>
                         }
                       </button>
                     </td>
@@ -324,7 +334,7 @@
               <mat-label>Barracas permitidas</mat-label>
               <mat-select multiple [(ngModel)]="blocos[config.col].novoBarracasPermitidas"
                           [disabled]="blocos[config.col].saving">
-                @for (b of barracas; track b.id) {
+                @for (b of barracasAtivas; track b.id) {
                   <mat-option [value]="b.id">{{ b.nome }}</mat-option>
                 }
               </mat-select>
@@ -337,8 +347,9 @@
           <div class="add-linha">
             <mat-form-field appearance="outline" class="add-qtd-field" subscriptSizing="dynamic">
               <mat-label>Qtd. Sabores</mat-label>
-              <input matInput type="number" min="1" step="1"
-                     [(ngModel)]="blocos[config.col].novoQtdSabores"
+              <input matInput type="number" min="0" step="1"
+                     [ngModel]="blocos[config.col].novoQtdSabores"
+                     (ngModelChange)="blocos[config.col].novoQtdSabores = $event; onQtdSaboresChange(config.col, 'novo', $event)"
                      (keyup.enter)="adicionar(config.col)"
                      [disabled]="blocos[config.col].saving"
                      placeholder="Ex: 2">
@@ -347,7 +358,7 @@
               <mat-label>Sabores permitidos</mat-label>
               <mat-select multiple [(ngModel)]="blocos[config.col].novoSaboresPermitidos"
                           [disabled]="blocos[config.col].saving || blocos[config.col].novoQtdSabores === 0">
-                @for (s of sabores; track s.id) {
+                @for (s of saboresAtivos; track s.id) {
                   <mat-option [value]="s.id">{{ s.nome }}</mat-option>
                 }
               </mat-select>
@@ -358,7 +369,7 @@
 
       <button mat-flat-button color="primary"
               (click)="adicionar(config.col)"
-              [disabled]="!blocos[config.col].novoNome.trim() || blocos[config.col].saving">
+              [disabled]="!canAdicionar(config.col) || blocos[config.col].saving">
         <span class="btn-content">
           @if (blocos[config.col].saving) {
             <mat-spinner diameter="18"></mat-spinner>
