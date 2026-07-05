@@ -5,7 +5,7 @@
       Logs de Rastreabilidade
     </h1>
     <div class="header-acoes">
-      <button mat-stroked-button (click)="imprimir()" [disabled]="carregando || logs.length === 0">
+      <button mat-stroked-button class="btn-imprimir" (click)="imprimir()" [disabled]="carregando || logs.length === 0">
         <mat-icon>print</mat-icon>
         Imprimir
       </button>

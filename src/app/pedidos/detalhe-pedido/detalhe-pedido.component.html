@@ -73,7 +73,7 @@
 <mat-dialog-actions align="end">
   <button mat-stroked-button (click)="fechar()">Fechar</button>
   @if (statusPedido === 'em-preparacao') {
-    <button mat-stroked-button (click)="reimprimir()">
+    <button mat-stroked-button class="btn-imprimir" (click)="reimprimir()">
       <mat-icon>print</mat-icon>
       Reimprimir
     </button>

@@ -8,7 +8,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { PedidosService } from '../../core/services/pedidos.service';
+import { ItensService } from '../../core/services/itens.service';
 import { ItemPedido, resumoItemPedido } from '../../core/models/pedido.model';
 import { formatPreco } from '../../core/utils/formatters';
 import { ConfirmacaoDialogComponent } from '../../shared/confirmacao-dialog/confirmacao-dialog.component';
@@ -38,8 +40,10 @@ export class PagamentoComponent {
   readonly data = inject<PagamentoData>(MAT_DIALOG_DATA);
   private dialogRef = inject(MatDialogRef<PagamentoComponent>);
   private pedidosService = inject(PedidosService);
+  private itensService = inject(ItensService);
   private router = inject(Router);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
 
   valorPago: number | null = null;
   doacao: number | null = null;
@@ -88,6 +92,16 @@ export class PagamentoComponent {
       const doacao = this.doacao && this.doacao > 0 ? this.doacao : undefined;
       await this.pedidosService.marcarPago(this.data.pedidoId, this.valorPago! - (this.doacao ?? 0), doacao);
       this.dialogRef.close(true);
+
+      const deveImprimir = await this.verificarViasImpressao();
+      if (!deveImprimir) {
+        this.snackBar.open(
+          `Pedido #${this.data.numero} pago com sucesso!`, '',
+          { duration: 4000, panelClass: 'snack-sucesso' }
+        );
+        return;
+      }
+
       this.router.navigate(['/pedidos/impressao'], {
         state: {
           numero: this.data.numero,
@@ -102,6 +116,18 @@ export class PagamentoComponent {
       this.erro = 'Erro ao registrar pagamento.';
     } finally {
       this.saving = false;
+    }
+  }
+
+  private async verificarViasImpressao(): Promise<boolean> {
+    const barracaId = this.data.barracaId;
+    if (!barracaId) return true;
+    try {
+      const barracas = await firstValueFrom(this.itensService.getItens('barracas'));
+      const barraca = barracas.find(b => b.id === barracaId);
+      return barraca?.viasImpressao !== 'nenhuma';
+    } catch {
+      return true;
     }
   }
 

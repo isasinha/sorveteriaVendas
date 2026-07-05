@@ -47,14 +47,15 @@
   gap: var(--spacing-2xl);
   padding: 0 var(--spacing-xl);
 
-  @include responsive(mobile) {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-lg);
-    padding: 0;
-  }
-
   @include responsive(tablet) {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include responsive(mobile) {
+    grid-template-columns: 1fr;
+    grid-auto-rows: 1fr;
+    gap: var(--spacing-lg);
+    padding: 0;
   }
 }
 
