@@ -16,6 +16,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ItensService } from '../../core/services/itens.service';
 import { PessoasService } from '../../core/services/pessoas.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ItemBase, ColecaoItens } from '../../core/models/item.model';
 import { PerfilCompleto, Funcionalidade, FUNCIONALIDADES, FiltroConsultar, FILTROS_CONSULTAR, isTI, EscopoBarraca } from '../../core/models/perfil.model';
 import { formatPreco } from '../../core/utils/formatters';
@@ -72,7 +73,19 @@ export class AlterarItensComponent implements OnInit {
   private dialog = inject(MatDialog);
   private itensService = inject(ItensService);
   private pessoasService = inject(PessoasService);
+  private authService = inject(AuthService);
   private destroyRef = inject(DestroyRef);
+
+  // Detecta se o perfil logado é coordenador (escopo propria + tem barraca)
+  readonly isCoordenador: boolean = (() => {
+    const p = this.authService.getPerfil();
+    return !!(p && !isTI(p.nome) && p.idBarraca && p.escopo === 'propria');
+  })();
+  readonly coordenadorBarracaId: string = this.authService.getPerfil()?.idBarraca ?? '';
+
+  get coordenadorBarracaNome(): string {
+    return this.barracas.find(b => b.id === this.coordenadorBarracaId)?.nome ?? this.coordenadorBarracaId;
+  }
 
   readonly blocosConfig: BlocoConfig[] = [
     { col: 'produtos',   titulo: 'Produtos',   icon: 'category',        labelAdicionar: 'Novo produto',   iconClass: 'icon-produtos',   temPreco: true, temQtdSabores: true, span: 3 },
@@ -216,6 +229,54 @@ export class AlterarItensComponent implements OnInit {
     }
   }
 
+  // Estado local dos produtos selecionados pelo coordenador (inicializado ao carregar produtos)
+  coordenadorSelecionados = new Set<string>();
+  private coordenadorInicializado = false;
+  savingCoordenador = false;
+  sucessoCoordenador = false;
+
+  isProdutoNaMinhaBarraca(produto: ItemBase): boolean {
+    return this.coordenadorSelecionados.has(produto.id);
+  }
+
+  toggleBarracaCoordenador(produto: ItemBase): void {
+    if (this.coordenadorSelecionados.has(produto.id)) {
+      this.coordenadorSelecionados.delete(produto.id);
+    } else {
+      this.coordenadorSelecionados.add(produto.id);
+    }
+  }
+
+  async salvarCoordenador(): Promise<void> {
+    if (this.savingCoordenador) return;
+    this.savingCoordenador = true;
+    this.blocos['produtos'].erro = '';
+    try {
+      const todos = this.barracas.map(b => b.id);
+      await Promise.all(
+        this.blocos['produtos'].itens.map(produto => {
+          const atual = produto.barracasPermitidas ?? todos;
+          const jaEsta = atual.includes(this.coordenadorBarracaId);
+          const deveEstar = this.coordenadorSelecionados.has(produto.id);
+          if (jaEsta === deveEstar) return Promise.resolve();
+          const novaLista = deveEstar
+            ? [...atual, this.coordenadorBarracaId]
+            : atual.filter(id => id !== this.coordenadorBarracaId);
+          const barracasValue = novaLista.length === todos.length && todos.every(id => novaLista.includes(id))
+            ? undefined
+            : novaLista;
+          return this.itensService.updateItem('produtos', produto.id, produto.nome, { barracasPermitidas: barracasValue });
+        })
+      );
+      this.sucessoCoordenador = true;
+      setTimeout(() => (this.sucessoCoordenador = false), 3000);
+    } catch {
+      this.blocos['produtos'].erro = 'Erro ao salvar produtos.';
+    } finally {
+      this.savingCoordenador = false;
+    }
+  }
+
   // Permissões por perfil
   perfis: PerfilCompleto[] = [];
   editPermissoes = new Map<string, Set<Funcionalidade>>();
@@ -238,7 +299,19 @@ export class AlterarItensComponent implements OnInit {
       this.itensService.getItens(col)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
-          next: itens => Object.assign(this.blocos[col], { itens, loading: false }),
+          next: itens => {
+            Object.assign(this.blocos[col], { itens, loading: false });
+            // Inicializa o estado local do coordenador na primeira carga
+            if (col === 'produtos' && this.isCoordenador && !this.coordenadorInicializado) {
+              this.coordenadorInicializado = true;
+              this.coordenadorSelecionados = new Set(
+                itens.filter(p => {
+                  if (p.barracasPermitidas === undefined) return true;
+                  return p.barracasPermitidas.includes(this.coordenadorBarracaId);
+                }).map(p => p.id)
+              );
+            }
+          },
           error: () => Object.assign(this.blocos[col], { loading: false, erro: 'Erro ao carregar dados.' })
         });
     });

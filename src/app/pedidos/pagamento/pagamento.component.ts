@@ -46,9 +46,18 @@ export class PagamentoComponent {
   saving = false;
   erro = '';
 
+  get trocoBase(): number | null {
+    if (this.valorPago == null) return null;
+    return this.valorPago - this.data.total;
+  }
+
   get troco(): number | null {
     if (this.valorPago == null) return null;
     return this.valorPago - this.data.total - (this.doacao ?? 0);
+  }
+
+  onValorPagoChange(): void {
+    if (this.trocoBase == null || this.trocoBase <= 0) this.doacao = null;
   }
 
   get canConfirmar(): boolean {

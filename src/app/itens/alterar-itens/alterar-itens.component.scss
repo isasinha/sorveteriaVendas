@@ -281,6 +281,44 @@
 }
 
 // ──────────────────────────────────────────────
+// View coordenador
+// ──────────────────────────────────────────────
+
+.coordenador-card {
+  max-width: 600px;
+}
+
+.coordenador-barraca-msg {
+  strong { color: var(--color-primary); }
+}
+
+.coordenador-lista {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.coordenador-item {
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  border-bottom: 1px solid var(--color-border-light);
+  transition: background-color var(--transition-fast);
+
+  &:last-child { border-bottom: none; }
+  &:hover { background-color: var(--color-bg-hover); }
+  &.inativo { opacity: 0.5; }
+}
+
+.coordenador-produto-nome {
+  font-size: 14px;
+  color: var(--color-text);
+  margin-left: var(--spacing-xs);
+}
+
+// ──────────────────────────────────────────────
 // Footer do bloco (adicionar novo item)
 // ──────────────────────────────────────────────
 

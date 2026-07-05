@@ -30,6 +30,9 @@ export class LoginComponent {
   loading = false;
   errorMessage = '';
   hidePassword = true;
+  modoEsqueciSenha = false;
+  enviandoReset = false;
+  mensagemReset = '';
 
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -69,5 +72,35 @@ export class LoginComponent {
 
   togglePasswordVisibility() {
     this.hidePassword = !this.hidePassword;
+  }
+
+  entrarModoReset(): void {
+    this.modoEsqueciSenha = true;
+    this.errorMessage = '';
+    this.mensagemReset = '';
+  }
+
+  voltarParaLogin(): void {
+    this.modoEsqueciSenha = false;
+    this.mensagemReset = '';
+    this.errorMessage = '';
+  }
+
+  async enviarReset(): Promise<void> {
+    if (!this.email) {
+      this.errorMessage = 'Informe o email para redefinir a senha.';
+      return;
+    }
+    this.enviandoReset = true;
+    this.errorMessage = '';
+    this.mensagemReset = '';
+    try {
+      await this.authService.resetPassword(this.email);
+      this.mensagemReset = 'Email de redefinição enviado. Verifique sua caixa de entrada.';
+    } catch {
+      this.errorMessage = 'Não foi possível enviar o email. Verifique se o endereço está correto.';
+    } finally {
+      this.enviandoReset = false;
+    }
   }
 }

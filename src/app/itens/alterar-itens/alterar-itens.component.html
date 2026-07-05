@@ -10,24 +10,96 @@
     </button>
   </div>
 
-  <div class="blocos-linha">
-    @for (config of blocosLinha1; track config.col) {
-      <ng-container *ngTemplateOutlet="blocoCard; context: { config }"></ng-container>
-    }
-  </div>
+  @if (isCoordenador) {
+    <!-- ── VIEW COORDENADOR ──────────────────────────────────── -->
+    <mat-card class="bloco coordenador-card">
+      <div class="bloco-header">
+        <div class="bloco-icon icon-produtos">
+          <mat-icon>category</mat-icon>
+        </div>
+        <div class="bloco-info">
+          <h2>Produtos da Barraca</h2>
+          <span class="item-count coordenador-barraca-msg">
+            Você está selecionando produtos para a barraca <strong>{{ coordenadorBarracaNome }}</strong>
+          </span>
+        </div>
+      </div>
 
-  <div class="blocos-linha">
-    @for (config of blocosLinha2; track config.col) {
-      <ng-container *ngTemplateOutlet="blocoCard; context: { config }"></ng-container>
-    }
-  </div>
+      <div class="bloco-content">
+        @if (blocos['produtos'].loading) {
+          <div class="loading-state"><mat-spinner diameter="32"></mat-spinner></div>
+        } @else if (blocos['produtos'].erro) {
+          <div class="erro-msg">
+            <mat-icon>error_outline</mat-icon>{{ blocos['produtos'].erro }}
+          </div>
+        } @else if (blocos['produtos'].itens.length === 0) {
+          <div class="empty-state">
+            <mat-icon>inbox</mat-icon>
+            <span>Nenhum produto cadastrado</span>
+          </div>
+        } @else {
+          <ul class="coordenador-lista">
+            @for (produto of blocos['produtos'].itens; track produto.id) {
+              <li class="coordenador-item" [class.inativo]="!(produto.ativo ?? true)">
+                <mat-checkbox
+                  [checked]="isProdutoNaMinhaBarraca(produto)"
+                  [disabled]="savingCoordenador || !(produto.ativo ?? true)"
+                  (change)="toggleBarracaCoordenador(produto)">
+                  <span class="coordenador-produto-nome">{{ produto.nome }}</span>
+                  @if (!(produto.ativo ?? true)) {
+                    <span class="badge-inativo">inativo</span>
+                  }
+                </mat-checkbox>
+              </li>
+            }
+          </ul>
+        }
+      </div>
 
-  <div class="blocos-linha">
-    @for (config of blocosLinha3; track config.col) {
-      <ng-container *ngTemplateOutlet="blocoCard; context: { config }"></ng-container>
-    }
-  </div>
+      <div class="bloco-footer">
+        @if (blocos['produtos'].erro) {
+          <div class="erro-msg">
+            <mat-icon>error_outline</mat-icon>{{ blocos['produtos'].erro }}
+          </div>
+        }
+        @if (sucessoCoordenador) {
+          <div class="sucesso-msg">
+            <mat-icon>check_circle</mat-icon>
+            Alterações salvas com sucesso!
+          </div>
+        }
+        <button mat-flat-button color="primary" (click)="salvarCoordenador()" [disabled]="savingCoordenador">
+          <span class="btn-content">
+            @if (savingCoordenador) {
+              <mat-spinner diameter="18"></mat-spinner>
+            } @else {
+              <mat-icon>save</mat-icon>
+            }
+            Salvar Alterações
+          </span>
+        </button>
+      </div>
+    </mat-card>
 
+  } @else {
+    <!-- ── VIEW NORMAL ──────────────────────────────────────── -->
+    <div class="blocos-linha">
+      @for (config of blocosLinha1; track config.col) {
+        <ng-container *ngTemplateOutlet="blocoCard; context: { config }"></ng-container>
+      }
+    </div>
+
+    <div class="blocos-linha">
+      @for (config of blocosLinha2; track config.col) {
+        <ng-container *ngTemplateOutlet="blocoCard; context: { config }"></ng-container>
+      }
+    </div>
+
+    <div class="blocos-linha">
+      @for (config of blocosLinha3; track config.col) {
+        <ng-container *ngTemplateOutlet="blocoCard; context: { config }"></ng-container>
+      }
+    </div>
   <!-- ── Permissões e Filtros por Perfil ──────────────────────── -->
   <mat-card class="permissoes-card">
     <div class="card-header">
@@ -126,6 +198,8 @@
       </button>
     </div>
   </mat-card>
+
+  } <!-- fim @else isCoordenador -->
 
 </div>
 

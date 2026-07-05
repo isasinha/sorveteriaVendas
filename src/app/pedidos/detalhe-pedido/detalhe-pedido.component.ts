@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -43,6 +44,7 @@ export class DetalhePedidoComponent {
   private dialogRef = inject(MatDialogRef<DetalhePedidoComponent>);
   private dialog = inject(MatDialog);
   private pedidosService = inject(PedidosService);
+  private router = inject(Router);
 
   saving = false;
   erro = '';
@@ -102,11 +104,31 @@ export class DetalhePedidoComponent {
     this.dialogRef.close(false);
   }
 
+  reimprimir(): void {
+    this.dialogRef.close(false);
+    this.router.navigate(['/pedidos/impressao'], {
+      state: {
+        numero: this.pedido.numero,
+        nomeCliente: this.pedido.nomeCliente,
+        itens: this.pedido.itens,
+        total: this.pedido.total,
+        origem: '/pedidos/consultar',
+        barracaId: this.pedido.barracaId,
+      }
+    });
+  }
+
+  get statusDestino(): string {
+    if (this.pedido.naoRetirado) return 'Em preparação';
+    return this.pedido.pago ? 'Em preparação' : 'A pagar';
+  }
+
   async voltarParaEmPreparo(): Promise<void> {
+    const destino = this.statusDestino;
     const ref = this.dialog.open(ConfirmacaoDialogComponent, {
       data: {
-        titulo: 'Voltar para Em preparação',
-        mensagem: 'Deseja restaurar este pedido para o status "Em preparação"?',
+        titulo: `Voltar para ${destino}`,
+        mensagem: `Deseja restaurar este pedido para o status "${destino}"?`,
         labelSim: 'Sim, restaurar',
         labelNao: 'Não',
       },

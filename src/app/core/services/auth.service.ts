@@ -94,6 +94,11 @@ export class AuthService {
     }
   }
 
+  async resetPassword(email: string): Promise<void> {
+    const { sendPasswordResetEmail } = await import('firebase/auth');
+    await sendPasswordResetEmail(auth, email);
+  }
+
   private handleAuthError(error: any): Error {
     const mensagens: Record<string, string> = {
       'auth/invalid-email': 'Email inválido',

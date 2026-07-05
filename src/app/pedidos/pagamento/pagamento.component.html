@@ -31,24 +31,11 @@
 
   <div class="campos-pagamento">
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
-      <mat-label>Doação (opcional)</mat-label>
-      <span matTextPrefix>R$&nbsp;</span>
-      <input matInput type="number" min="0" step="1"
-             [(ngModel)]="doacao" placeholder="0,00">
-    </mat-form-field>
-  </div>
-
-  <div class="linha-total-a-pagar">
-    <span>Total a pagar</span>
-    <span class="valor-total-a-pagar">{{ formatPreco(data.total + (doacao ?? 0)) }}</span>
-  </div>
-
-  <div class="campos-pagamento">
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
       <mat-label>Valor pago</mat-label>
       <span matTextPrefix>R$&nbsp;</span>
       <input matInput type="number" min="0" step="1"
-             [(ngModel)]="valorPago" placeholder="0,00">
+             [ngModel]="valorPago" (ngModelChange)="valorPago = $event; onValorPagoChange()" placeholder="0,00">
+      
     </mat-form-field>
   </div>
 
@@ -56,6 +43,18 @@
     <div class="linha-troco" [class.insuficiente]="troco < 0">
       <span>{{ troco < 0 ? 'Faltam' : 'Troco' }}</span>
       <span class="valor-troco">{{ formatPreco(troco < 0 ? -troco : troco) }}</span>
+    </div>
+  }
+
+  @if (troco != null && trocoBase != null && trocoBase > 0) {
+    <div class="campos-pagamento">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Doação (opcional)</mat-label>
+        <span matTextPrefix>R$&nbsp;</span>
+        <input matInput type="number" min="0" step="1"
+               [(ngModel)]="doacao" placeholder="0,00">
+        
+      </mat-form-field>
     </div>
   }
 
@@ -69,7 +68,7 @@
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
-  <button mat-stroked-button (click)="fechar()" [disabled]="saving">Fechar</button>
+  <button mat-stroked-button (click)="fechar()" [disabled]="saving">Fechar sem pagar</button>
   <button mat-flat-button color="primary" (click)="confirmar()" [disabled]="!canConfirmar || saving">
     <span class="btn-content">
       @if (saving) {
