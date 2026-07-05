@@ -24,6 +24,7 @@ export class ItensService {
             if (data['qtdSabores'] != null) item.qtdSabores = data['qtdSabores'] as number;
             if (data['saboresPermitidos'] != null) item.saboresPermitidos = data['saboresPermitidos'] as string[];
             if (data['barracasPermitidas'] != null) item.barracasPermitidas = data['barracasPermitidas'] as string[];
+            if (data['viasImpressao'] != null) item.viasImpressao = data['viasImpressao'] as 'ambas' | 'cliente' | 'producao' | 'nenhuma';
             item.ativo = data['ativo'] !== false; // undefined = ativo por padrão
             return item;
           })

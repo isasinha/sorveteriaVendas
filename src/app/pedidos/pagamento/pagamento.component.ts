@@ -20,6 +20,7 @@ export interface PagamentoData {
   itens: ItemPedido[];
   total: number;
   origem: string;
+  barracaId?: string;
 }
 
 @Component({
@@ -85,6 +86,7 @@ export class PagamentoComponent {
           itens: this.data.itens,
           total: this.data.total,
           origem: this.data.origem,
+          barracaId: this.data.barracaId,
         }
       });
     } catch {

@@ -46,7 +46,7 @@
 .bloco {
   display: flex;
   flex-direction: column;
-  height: 520px;
+  min-height: 520px;
   overflow: hidden;
 }
 
@@ -100,6 +100,7 @@
 .bloco-content {
   flex: 1;
   min-height: 0;
+  max-height: 360px;
   overflow-y: auto;
   padding: var(--spacing-md) var(--spacing-xl);
 }
@@ -138,6 +139,7 @@
   .col-qtd    { width: 40px; }
   .col-sabores { width: 180px; }
   .col-barracas { width: 140px; }
+  .col-vias   { width: 170px; }
   .col-acoes  { width: 80px; }
 }
 
@@ -242,6 +244,11 @@
   max-width: 180px;
 }
 
+.cell-vias {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
 .cell-acoes {
   display: flex;
   justify-content: flex-end;
@@ -252,6 +259,7 @@
 .edit-qtd-field   { width: 100%; font-size: 14px; }
 .edit-sabores-field  { width: 100%; font-size: 13px; }
 .edit-barracas-field { width: 100%; font-size: 13px; }
+.edit-vias-field     { width: 100%; font-size: 13px; }
 
 .erro-msg {
   display: flex;
@@ -277,6 +285,7 @@
 // ──────────────────────────────────────────────
 
 .bloco-footer {
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -294,6 +303,13 @@
     gap: var(--spacing-sm);
 
     > * { flex: 1 1 0; width: 0; min-width: 0; }
+  }
+
+  .add-vias {
+    display: flex;
+    gap: var(--spacing-lg);
+    align-items: center;
+    padding: var(--spacing-xs) 0;
   }
 
   button { width: 100%; }

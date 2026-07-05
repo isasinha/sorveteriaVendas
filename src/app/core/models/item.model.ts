@@ -5,6 +5,7 @@ export interface ItemBase {
   qtdSabores?: number;
   saboresPermitidos?: string[];
   barracasPermitidas?: string[];
+  viasImpressao?: 'ambas' | 'cliente' | 'producao' | 'nenhuma';
   ativo?: boolean;
 }
 

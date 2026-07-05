@@ -29,6 +29,7 @@ interface BlocoState {
   novoQtdSabores: number | null;
   novoSaboresPermitidos: string[];
   novoBarracasPermitidas: string[];
+  novoVias: string[];
   saving: boolean;
   editingId: string | null;
   editingNome: string;
@@ -36,6 +37,7 @@ interface BlocoState {
   editingQtdSabores: number | null;
   editingSaboresPermitidos: string[];
   editingBarracasPermitidas: string[];
+  editingVias: string[];
   togglingId: string | null;
   erro: string;
   expandidoId: string | null; // painel de sabores/barracas aberto
@@ -49,6 +51,7 @@ interface BlocoConfig {
   iconClass: string;
   temPreco?: boolean;
   temQtdSabores?: boolean;
+  temViasImpressao?: boolean;
   span?: number;
 }
 
@@ -74,14 +77,14 @@ export class AlterarItensComponent implements OnInit {
   readonly blocosConfig: BlocoConfig[] = [
     { col: 'produtos',   titulo: 'Produtos',   icon: 'category',        labelAdicionar: 'Novo produto',   iconClass: 'icon-produtos',   temPreco: true, temQtdSabores: true, span: 3 },
     { col: 'sabores',    titulo: 'Sabores',    icon: 'icecream',        labelAdicionar: 'Novo sabor',     iconClass: 'icon-sabores'    },
+    { col: 'barracas',   titulo: 'Barracas',   icon: 'store',           labelAdicionar: 'Nova barraca',   iconClass: 'icon-barracas',   temViasImpressao: true, span: 2 },
+    { col: 'perfis',     titulo: 'Perfis',     icon: 'manage_accounts', labelAdicionar: 'Novo perfil',    iconClass: 'icon-perfis'     },
     { col: 'adicionais', titulo: 'Adicionais', icon: 'add_circle',      labelAdicionar: 'Novo adicional', iconClass: 'icon-adicionais' },
-    { col: 'barracas',   titulo: 'Barracas',   icon: 'store',           labelAdicionar: 'Nova barraca',   iconClass: 'icon-barracas'   },
-    { col: 'perfis',     titulo: 'Perfis',     icon: 'manage_accounts', labelAdicionar: 'Novo perfil',    iconClass: 'icon-perfis'     },  
   ];
 
   readonly blocosLinha1 = this.blocosConfig.slice(0,1);
-  readonly blocosLinha2 = this.blocosConfig.slice(1,4);
-  readonly blocosLinha3 = this.blocosConfig.slice(4,5);
+  readonly blocosLinha2 = this.blocosConfig.slice(1,3);
+  readonly blocosLinha3 = this.blocosConfig.slice(3,5);
   readonly funcionalidades = FUNCIONALIDADES;
   readonly filtrosConsultar = FILTROS_CONSULTAR;
   readonly isTI = isTI;
@@ -121,6 +124,26 @@ export class AlterarItensComponent implements OnInit {
     return item.barracasPermitidas
       .map(id => this.barracas.find(b => b.id === id)?.nome ?? id)
       .join(', ');
+  }
+
+  viasImpressaoLabel(item: ItemBase): string {
+    if (item.viasImpressao === 'nenhuma') return 'Nenhuma';
+    if (!item.viasImpressao || item.viasImpressao === 'ambas') return 'Ambas';
+    if (item.viasImpressao === 'cliente') return 'Só cliente';
+    return 'Só produção';
+  }
+
+  private viasToArray(vias: string | undefined): string[] {
+    if (vias === 'nenhuma') return [];
+    if (!vias || vias === 'ambas') return ['cliente', 'producao'];
+    return [vias];
+  }
+
+  private arrayToVias(arr: string[]): string {
+    if (arr.includes('cliente') && arr.includes('producao')) return 'ambas';
+    if (arr.includes('cliente')) return 'cliente';
+    if (arr.includes('producao')) return 'producao';
+    return 'nenhuma';
   }
 
   toggleExpandido(produtoId: string): void {
@@ -207,7 +230,7 @@ export class AlterarItensComponent implements OnInit {
   erroTabela = '';
 
   private novoBloco(): BlocoState {
-    return { itens: [], loading: true, novoNome: '', novoPreco: null, novoQtdSabores: null, novoSaboresPermitidos: [], novoBarracasPermitidas: [], saving: false, editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], editingBarracasPermitidas: [], togglingId: null, erro: '', expandidoId: null };
+    return { itens: [], loading: true, novoNome: '', novoPreco: null, novoQtdSabores: null, novoSaboresPermitidos: [], novoBarracasPermitidas: [], novoVias: ['cliente', 'producao'], saving: false, editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], editingBarracasPermitidas: [], editingVias: ['cliente', 'producao'], togglingId: null, erro: '', expandidoId: null };
   }
 
   ngOnInit(): void {
@@ -259,6 +282,7 @@ export class AlterarItensComponent implements OnInit {
 
   async adicionar(col: ColecaoItens): Promise<void> {
     const b = this.blocos[col];
+    const config = this.blocosConfig.find(c => c.col === col);
     if (!this.canAdicionar(col) || b.saving) return;
     const nomeNormalizado = b.novoNome.trim().toLowerCase();
     const duplicado = b.itens.some(i => i.nome.trim().toLowerCase() === nomeNormalizado);
@@ -284,12 +308,18 @@ export class AlterarItensComponent implements OnInit {
       extra['barracasPermitidas'] = barracasNovas.length === todosAsBarracas.length && todosAsBarracas.every(id => barracasNovas.includes(id))
         ? undefined
         : barracasNovas;
+      if (config?.temViasImpressao) {
+        extra['viasImpressao'] = this.arrayToVias(b.novoVias);
+      }
       await this.itensService.addItem(col, b.novoNome, extra);
       b.novoNome = '';
       b.novoPreco = null;
       b.novoQtdSabores = null;
       b.novoSaboresPermitidos = [];
       b.novoBarracasPermitidas = [];
+      if (config?.temViasImpressao) {
+        b.novoVias = ['cliente', 'producao'];
+      }
     } catch {
       b.erro = 'Erro ao adicionar item.';
     } finally {
@@ -298,11 +328,11 @@ export class AlterarItensComponent implements OnInit {
   }
 
   iniciarEdicao(col: ColecaoItens, item: ItemBase): void {
-    Object.assign(this.blocos[col], { editingId: item.id, editingNome: item.nome, editingPreco: item.preco ?? null, editingQtdSabores: item.qtdSabores ?? null, editingSaboresPermitidos: [...(item.saboresPermitidos ?? [])], editingBarracasPermitidas: [...(item.barracasPermitidas ?? [])], erro: '' });
+    Object.assign(this.blocos[col], { editingId: item.id, editingNome: item.nome, editingPreco: item.preco ?? null, editingQtdSabores: item.qtdSabores ?? null, editingSaboresPermitidos: [...(item.saboresPermitidos ?? [])], editingBarracasPermitidas: [...(item.barracasPermitidas ?? [])], editingVias: this.viasToArray(item.viasImpressao), erro: '' });
   }
 
   cancelarEdicao(col: ColecaoItens): void {
-    Object.assign(this.blocos[col], { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], editingBarracasPermitidas: [] });
+    Object.assign(this.blocos[col], { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], editingBarracasPermitidas: [], editingVias: ['cliente', 'producao'] });
   }
 
   async salvarEdicao(col: ColecaoItens): Promise<void> {
@@ -339,8 +369,11 @@ export class AlterarItensComponent implements OnInit {
         ? undefined
         : barracasArr;
       extra['barracasPermitidas'] = barracasValue;
+      if (config?.temViasImpressao) {
+        extra['viasImpressao'] = this.arrayToVias(b.editingVias);
+      }
       await this.itensService.updateItem(col, b.editingId, b.editingNome, extra);
-      Object.assign(b, { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], editingBarracasPermitidas: [] });
+      Object.assign(b, { editingId: null, editingNome: '', editingPreco: null, editingQtdSabores: null, editingSaboresPermitidos: [], editingBarracasPermitidas: [], editingVias: ['cliente', 'producao'] });
     } catch {
       b.erro = 'Erro ao salvar edição.';
     } finally {

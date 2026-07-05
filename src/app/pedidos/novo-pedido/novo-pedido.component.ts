@@ -233,7 +233,7 @@ export class NovoPedidoComponent implements OnInit {
       const isAtendimento = this.authService.getPerfil()?.nome.trim().toLowerCase() === 'atendimento';
       if (!isAtendimento) {
         this.dialog.open(PagamentoComponent, {
-          data: { pedidoId, numero, nomeCliente, itens, total: totalPedido, origem: '/pedidos/novo' },
+          data: { pedidoId, numero, nomeCliente, itens, total: totalPedido, origem: '/pedidos/novo', barracaId },
           width: '500px',
           maxHeight: '90vh',
           disableClose: true,

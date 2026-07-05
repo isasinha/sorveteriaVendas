@@ -167,10 +167,11 @@
           <table class="item-table">
             <colgroup>
               <col class="col-nome">
-              @if (config.temPreco)      { <col class="col-preco"> }
-              @if (config.temQtdSabores) { <col class="col-qtd"> }
-              @if (config.temQtdSabores) { <col class="col-sabores"> }
-              @if (config.temQtdSabores) { <col class="col-barracas"> }
+              @if (config.temPreco)           { <col class="col-preco"> }
+              @if (config.temQtdSabores)      { <col class="col-qtd"> }
+              @if (config.temQtdSabores)      { <col class="col-sabores"> }
+              @if (config.temQtdSabores)      { <col class="col-barracas"> }
+              @if (config.temViasImpressao)   { <col class="col-vias"> }
               <col class="col-acoes">
             </colgroup>
             @if (config.temQtdSabores) {
@@ -181,6 +182,15 @@
                   <th class="th-qtd">Qtd.</th>
                   <th class="th-sabores">Sabores</th>
                   <th class="th-barracas">Barracas</th>
+                  <th class="th-acoes"></th>
+                </tr>
+              </thead>
+            }
+            @if (config.temViasImpressao) {
+              <thead>
+                <tr class="header-row">
+                  <th class="th-nome">Nome</th>
+                  <th class="th-vias">Vias de impressão</th>
                   <th class="th-acoes"></th>
                 </tr>
               </thead>
@@ -246,6 +256,18 @@
                         </mat-form-field>
                       </td>
                     }
+                    @if (config.temViasImpressao) {
+                      <td>
+                        <mat-form-field appearance="outline" class="edit-vias-field" subscriptSizing="dynamic">
+                          <mat-label>Vias de impressão</mat-label>
+                          <mat-select multiple [(ngModel)]="blocos[config.col].editingVias">
+                            <mat-select-trigger></mat-select-trigger>
+                            <mat-option value="cliente">Via do cliente</mat-option>
+                            <mat-option value="producao">Via da produção</mat-option>
+                          </mat-select>
+                        </mat-form-field>
+                      </td>
+                    }
                     <td class="cell-acoes">
                       <button mat-icon-button color="primary" matTooltip="Salvar"
                               (click)="salvarEdicao(config.col)"
@@ -275,6 +297,9 @@
                     }
                     @if (config.temQtdSabores) {
                       <td class="cell-barracas">{{ barracasNomesDoItem(item) }}</td>
+                    }
+                    @if (config.temViasImpressao) {
+                      <td class="cell-vias">{{ viasImpressaoLabel(item) }}</td>
                     }
                     <td class="cell-acoes">
                       <button mat-icon-button matTooltip="Editar"
@@ -314,6 +339,17 @@
                (keyup.enter)="adicionar(config.col)"
                [disabled]="blocos[config.col].saving">
       </mat-form-field>
+
+      @if (config.temViasImpressao) {
+        <mat-form-field appearance="outline" class="add-field" subscriptSizing="dynamic">
+          <mat-label>Vias de impressão</mat-label>
+          <mat-select multiple [(ngModel)]="blocos[config.col].novoVias" [disabled]="blocos[config.col].saving">
+            <mat-select-trigger></mat-select-trigger>
+            <mat-option value="cliente">Via do cliente</mat-option>
+            <mat-option value="producao">Via da produção</mat-option>
+          </mat-select>
+        </mat-form-field>
+      }
 
       @if (config.temPreco || config.temQtdSabores) {
         <!-- linha 2: preço / barracas permitidas -->

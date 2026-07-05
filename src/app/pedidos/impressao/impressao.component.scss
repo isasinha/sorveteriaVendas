@@ -29,11 +29,11 @@
   font-weight: 700;
   letter-spacing: 2.5px;
   text-transform: uppercase;
-  color: #999;
+  color: #000;
   text-align: center;
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #000;
 }
 
 // ── Via do cliente ──────────────────────────
@@ -52,27 +52,54 @@
 .cliente-nome {
   font-size: 18px;
   font-weight: 500;
-  color: #333;
+  color: #000;
   margin-bottom: 20px;
 }
 
-.qr-bloco {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
+.pedido-data-hora {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #000;
+  text-align: center;
+  margin-bottom: 8px;
 }
 
-.qr-img {
-  width: 160px;
-  height: 160px;
-  display: block;
+.itens-cliente {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  border-top: 1px solid #000;
+  padding-top: 10px;
 }
 
-.qr-dica {
-  font-size: 10px;
-  color: #888;
-  font-family: Arial, sans-serif;
+.item-cliente {
+  padding: 6px 0;
+  border-bottom: 1px dashed #000;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.item-qtd {
+  font-weight: 700;
+  flex-shrink: 0;
+  min-width: 28px;
+}
+
+.item-desc {
+  flex: 1;
+}
+
+.item-sabores {
+  font-weight: 400;
+}
+
+.item-adicionais {
+  font-style: italic;
 }
 
 // ── Linha de corte ──────────────────────────
@@ -82,7 +109,7 @@
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  color: #aaa;
+  color: #000;
 }
 
 .tesoura {
@@ -92,7 +119,7 @@
 
 .tracejado {
   flex: 1;
-  border-top: 1.5px dashed #aaa;
+  border-top: 1.5px dashed #000;
 }
 
 // ── Via da produção ─────────────────────────
@@ -110,8 +137,9 @@
   }
 
   .prod-nome {
-    font-size: 14px;
-    color: #444;
+    font-size: 24px;
+    font-weight: 500;
+    color: #000;
   }
 }
 
@@ -152,13 +180,13 @@
 
 .item-prod-sabores {
   font-size: 13px;
-  color: #333;
+  color: #000;
   margin-top: 2px;
 }
 
 .item-prod-adicionais {
   font-size: 12px;
-  color: #666;
+  color: #000;
   font-style: italic;
   margin-top: 1px;
 }

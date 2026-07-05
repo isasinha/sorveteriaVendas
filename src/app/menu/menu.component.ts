@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { AuthService } from '../core/services/auth.service';
 import { Funcionalidade } from '../core/models/perfil.model';
 
@@ -22,8 +21,7 @@ interface MenuItem {
   imports: [
     MatCardModule,
     MatIconModule,
-    MatButtonModule,
-    MatToolbarModule
+    MatButtonModule
   ],
   templateUrl: './menu.component.html',
   styleUrl: './menu.component.scss'
@@ -49,16 +47,7 @@ export class MenuComponent {
     return this.authService.getCurrentUser()?.email?.split('@')[0] ?? 'Usuário';
   }
 
-  get perfilNome(): string {
-    return this.authService.getPerfil()?.nome ?? '';
-  }
-
   navigateTo(route: string): void {
     this.router.navigate([route]);
-  }
-
-  async onLogout(): Promise<void> {
-    await this.authService.logout();
-    this.router.navigate(['/login']);
   }
 }

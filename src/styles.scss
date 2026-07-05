@@ -77,4 +77,10 @@ body {
   margin: var(--spacing-lg);
 }
 
+// Snackbar de sucesso
+.snack-sucesso .mdc-snackbar__surface {
+  background-color: #2e7d32 !important;
+  color: #fff !important;
+}
+
 

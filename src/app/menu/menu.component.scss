@@ -8,42 +8,6 @@
   flex-direction: column;
 }
 
-.toolbar {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  box-shadow: var(--shadow);
-
-  .toolbar-content {
-    width: 100%;
-    @include flex-between;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-
-  .toolbar-left {
-    display: flex;
-    align-items: center;
-
-    .toolbar-logo {
-      height: 44px;
-      width: auto;
-    }
-  }
-
-  .toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-lg);
-
-    .user-name {
-      @include responsive(mobile) {
-        display: none;
-      }
-    }
-  }
-}
-
 .content {
   flex: 1;
   padding: 40px var(--spacing-xl);

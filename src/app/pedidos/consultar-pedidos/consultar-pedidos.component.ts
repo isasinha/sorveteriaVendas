@@ -203,7 +203,7 @@ export class ConsultarPedidosComponent implements OnInit {
 
     if (getStatusPedido(pedido) === 'a-pagar') {
       this.dialog.open(PagamentoComponent, {
-        data: { pedidoId: pedido.id, numero: pedido.numero, nomeCliente: pedido.nomeCliente, itens: pedido.itens, total: pedido.total, origem: '/pedidos/consultar' },
+        data: { pedidoId: pedido.id, numero: pedido.numero, nomeCliente: pedido.nomeCliente, itens: pedido.itens, total: pedido.total, origem: '/pedidos/consultar', barracaId: pedido.barracaId },
         width: '500px',
         maxHeight: '90vh',
         disableClose: true,

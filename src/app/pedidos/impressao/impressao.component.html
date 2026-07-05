@@ -12,30 +12,46 @@
 <div class="cupom">
 
   <!-- ── VIA DO CLIENTE ─────────────────────── -->
-  <div class="via via-cliente">
+  @if (mostrarViaCliente) {
+    <div class="via via-cliente">
     <div class="via-label">VIA DO CLIENTE</div>
 
+    <div class="pedido-data-hora">{{ dataHoraPedido }}</div>
     <div class="cliente-pedido-numero">Pedido #{{ numero }}</div>
     <div class="cliente-nome">{{ nomeCliente }}</div>
 
-    @if (qrDataUrl) {
-      <div class="qr-bloco">
-        <img [src]="qrDataUrl" alt="QR Code" class="qr-img">
-        <span class="qr-dica">Escaneie para salvar os dados do pedido</span>
-      </div>
-    }
+    <ul class="itens-cliente">
+      @for (item of itens; track $index) {
+        <li class="item-cliente">
+          <div class="item-prod-detalhe">
+            <div class="item-prod-tipo">{{ item.quantidade }}x {{ item.tipoNome }}</div>
+            @if (item.saboresNomes.length > 0) {
+              <div class="item-prod-sabores">{{ item.saboresNomes.join(', ') }}</div>
+            }
+            @if (item.adicionaisNomes.length > 0) {
+              <div class="item-prod-adicionais">+ {{ item.adicionaisNomes.join(', ') }}</div>
+            }
+          </div>
+        </li>
+      }
+    </ul>
   </div>
+  }
 
   <!-- ── LINHA DE CORTE ─────────────────────── -->
+  @if (mostrarViaCliente && mostrarViaProducao) {
   <div class="linha-corte">
     <span class="tesoura">✂</span>
     <div class="tracejado"></div>
   </div>
+  }
 
   <!-- ── VIA DA PRODUÇÃO ────────────────────── -->
-  <div class="via via-producao">
+  @if (mostrarViaProducao) {
+    <div class="via via-producao">
     <div class="via-label">VIA DA PRODUÇÃO</div>
 
+    <div class="pedido-data-hora">{{ dataHoraPedido }}</div>
     <div class="prod-cabecalho">
       <span class="prod-numero">#{{ numero }}</span>
       <span class="prod-nome">{{ nomeCliente }}</span>
@@ -58,5 +74,5 @@
     </ul>
 
   </div>
-
+  }
 </div>
