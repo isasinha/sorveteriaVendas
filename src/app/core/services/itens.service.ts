@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { db } from '../config/firebase.config';
 import {
   collection, addDoc, updateDoc, deleteDoc,
@@ -7,9 +7,11 @@ import {
 } from 'firebase/firestore';
 import { Observable } from 'rxjs';
 import { ItemBase, ColecaoItens } from '../models/item.model';
+import { LogService } from './log.service';
 
 @Injectable({ providedIn: 'root' })
 export class ItensService {
+  private log = inject(LogService);
 
   getItens(colecao: ColecaoItens): Observable<ItemBase[]> {
     return new Observable(subscriber => {
@@ -37,6 +39,7 @@ export class ItensService {
 
   async addItem(colecao: ColecaoItens, nome: string, extra?: Record<string, unknown>): Promise<void> {
     await addDoc(collection(db, colecao), { nome: nome.trim(), ...extra });
+    this.log.registrar('item.criado', `${colecao} — "${nome.trim()}"`);
   }
 
   async updateItem(colecao: ColecaoItens, id: string, nome: string, extra?: Record<string, unknown>): Promise<void> {
@@ -47,10 +50,12 @@ export class ItensService {
       }
     }
     await updateDoc(doc(db, colecao, id), data as UpdateData<object>);
+    this.log.registrar('item.alterado', `${colecao} — "${nome.trim()}"`);
   }
 
   async toggleAtivo(colecao: ColecaoItens, id: string, ativo: boolean): Promise<void> {
     await updateDoc(doc(db, colecao, id), { ativo } as UpdateData<object>);
+    this.log.registrar(ativo ? 'item.ativado' : 'item.desativado', `${colecao} — ID: ${id}`);
   }
 
   async removerItemDeProdutos(campo: 'saboresPermitidos' | 'barracasPermitidas', itemId: string, produtos: ItemBase[]): Promise<void> {
@@ -65,5 +70,6 @@ export class ItensService {
 
   async deleteItem(colecao: ColecaoItens, id: string): Promise<void> {
     await deleteDoc(doc(db, colecao, id));
+    this.log.registrar('item.deletado', `${colecao} — ID: ${id}`);
   }
 }

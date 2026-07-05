@@ -46,5 +46,10 @@ export const routes: Routes = [
     loadComponent: () => import('./relatorios/relatorios.component').then(m => m.RelatoriosComponent),
     canActivate: [authGuard, perfilGuard('relatorios')],
   },
+  {
+    path: 'logs',
+    loadComponent: () => import('./logs/logs.component').then(m => m.LogsComponent),
+    canActivate: [authGuard, perfilGuard('logs')],
+  },
   { path: '**', redirectTo: '/login' },
 ];

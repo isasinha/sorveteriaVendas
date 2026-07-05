@@ -1,0 +1,137 @@
+<div class="page-container">
+  <div class="page-header no-print">
+    <h1>
+      <mat-icon>history</mat-icon>
+      Logs de Rastreabilidade
+    </h1>
+    <div class="header-acoes">
+      <button mat-stroked-button (click)="imprimir()" [disabled]="carregando || logs.length === 0">
+        <mat-icon>print</mat-icon>
+        Imprimir
+      </button>
+      <button mat-raised-button (click)="voltar()">
+        <mat-icon>arrow_back</mat-icon>
+        Voltar
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <mat-card class="filtros-card no-print">
+    <mat-card-content>
+      <div class="filtros-linha">
+        <div class="filtro-grupo">
+          <label>De</label>
+          <div class="datetime-pair">
+            <input type="date" [(ngModel)]="dataInicio" />
+            <input type="time" [(ngModel)]="horaInicio" />
+          </div>
+        </div>
+
+        <mat-icon class="filtro-seta">arrow_forward</mat-icon>
+
+        <div class="filtro-grupo">
+          <label>Até</label>
+          <div class="datetime-pair">
+            <input type="date" [(ngModel)]="dataFim" />
+            <input type="time" [(ngModel)]="horaFim" />
+          </div>
+        </div>
+
+        <button mat-raised-button color="primary" (click)="buscar()">
+          <mat-icon>search</mat-icon>
+          Buscar
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Estado -->
+  @if (carregando) {
+    <div class="estado no-print">
+      <mat-icon>hourglass_empty</mat-icon>
+      Carregando...
+    </div>
+  } @else if (erro) {
+    <div class="estado erro no-print">
+      <mat-icon>error_outline</mat-icon>
+      {{ erro }}
+    </div>
+  } @else if (logs.length === 0) {
+    <div class="estado no-print">
+      <mat-icon>inbox</mat-icon>
+      Nenhum log no período selecionado.
+    </div>
+  } @else {
+    <!-- Tabela de logs (tela) -->
+    <mat-card class="tabela-card no-print">
+      <mat-card-content>
+        <div class="tabela-info">
+          {{ logs.length }} evento{{ logs.length > 1 ? 's' : '' }} encontrado{{ logs.length > 1 ? 's' : '' }}
+          (máximo 500 por consulta)
+        </div>
+        <div class="tabela-wrapper">
+          <table class="logs-tabela">
+            <thead>
+              <tr>
+                <th class="col-quando">Data / Hora</th>
+                <th class="col-quem">Quem</th>
+                <th class="col-acao">Ação</th>
+                <th class="col-detalhe">Detalhe</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (log of logs; track log.id) {
+                <tr>
+                  <td class="col-quando">{{ formatDataHora(log.quando) }}</td>
+                  <td class="col-quem">{{ log.quem }}</td>
+                  <td class="col-acao">
+                    <span class="acao-badge {{ acaoClasse(log.acao) }}">
+                      {{ acaoLabel(log.acao) }}
+                    </span>
+                  </td>
+                  <td class="col-detalhe">{{ log.detalhe }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>
+
+<!-- Seção visível somente na impressão -->
+<div class="print-only">
+  <div class="print-cabecalho">
+    <h1>Logs de Rastreabilidade</h1>
+    <p>{{ dataInicio.split('-').reverse().join('/') }} {{ horaInicio }} até {{ dataFim.split('-').reverse().join('/') }} {{ horaFim }}</p>
+  </div>
+
+  @if (logs.length === 0) {
+    <p>Nenhum log no período.</p>
+  } @else {
+    <table class="print-tabela">
+      <thead>
+        <tr>
+          <th>Data / Hora</th>
+          <th>Quem</th>
+          <th>Ação</th>
+          <th>Detalhe</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (log of logs; track log.id) {
+          <tr>
+            <td>{{ formatDataHora(log.quando) }}</td>
+            <td>{{ log.quem }}</td>
+            <td>{{ acaoLabel(log.acao) }}</td>
+            <td>{{ log.detalhe }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  <div class="print-rodape">Gerado em {{ dataGeracao }}</div>
+</div>

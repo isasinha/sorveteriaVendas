@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { db } from '../config/firebase.config';
 import {
   collection, doc, addDoc, getDoc, updateDoc, query, orderBy,
@@ -6,9 +6,11 @@ import {
 } from 'firebase/firestore';
 import { Observable } from 'rxjs';
 import { NovoPedido, NovaDoacaoAvulsa, Pedido, ItemPedido } from '../models/pedido.model';
+import { LogService } from './log.service';
 
 @Injectable({ providedIn: 'root' })
 export class PedidosService {
+  private log = inject(LogService);
 
   getProximoNumero(): Promise<number> {
     return getDoc(doc(db, 'config', 'contadores')).then(snap =>
@@ -28,6 +30,7 @@ export class PedidosService {
       tx.set(pedidoRef, { ...pedido, tipo: 'pedido', numero, data: serverTimestamp(), entregue: false, pago: false });
       pedidoId = pedidoRef.id;
     });
+    this.log.registrar('pedido.criado', `#${numero} — ${pedido.nomeCliente} — R$ ${pedido.total.toFixed(2)}`);
     return { id: pedidoId, numero };
   }
 
@@ -39,6 +42,7 @@ export class PedidosService {
       entregue: true,
       pago: true,
     });
+    this.log.registrar('doacao.avulsa', `R$ ${doacao.total.toFixed(2)}${doacao.descricao ? ' — ' + doacao.descricao : ''}`);
   }
 
   async salvarEntregaParcial(id: string, itens: ItemPedido[]): Promise<void> {
@@ -47,6 +51,7 @@ export class PedidosService {
       itens,
       ...(todosEntregues ? { entregue: true } : {}),
     });
+    this.log.registrar('pedido.entrega-parcial', `Pedido ID: ${id}`);
   }
 
   async marcarEntregue(id: string): Promise<'ok' | 'ja-entregue'> {
@@ -58,6 +63,9 @@ export class PedidosService {
       tx.update(ref, { entregue: true });
       resultado = 'ok';
     });
+    if (resultado === 'ok') {
+      this.log.registrar('pedido.entregue', `Pedido ID: ${id}`);
+    }
     return resultado;
   }
 
@@ -72,23 +80,30 @@ export class PedidosService {
       tx.update(ref, update);
       resultado = 'ok';
     });
+    if (resultado === 'ok') {
+      this.log.registrar('pedido.pago', `Pedido ID: ${id} — R$ ${valorPago.toFixed(2)}${doacao ? ` (doação R$ ${doacao.toFixed(2)})` : ''}`);
+    }
     return resultado;
   }
 
   async cancelarPedido(id: string): Promise<void> {
     await updateDoc(doc(db, 'pedidos', id), { cancelado: true });
+    this.log.registrar('pedido.cancelado', `Pedido ID: ${id}`);
   }
 
   async desfazerCancelado(id: string): Promise<void> {
     await updateDoc(doc(db, 'pedidos', id), { cancelado: deleteField() });
+    this.log.registrar('pedido.cancelamento-desfeito', `Pedido ID: ${id}`);
   }
 
   async marcarNaoRetirado(id: string): Promise<void> {
     await updateDoc(doc(db, 'pedidos', id), { naoRetirado: true });
+    this.log.registrar('pedido.nao-retirado', `Pedido ID: ${id}`);
   }
 
   async desfazerNaoRetirado(id: string): Promise<void> {
     await updateDoc(doc(db, 'pedidos', id), { naoRetirado: deleteField() });
+    this.log.registrar('pedido.nao-retirado-desfeito', `Pedido ID: ${id}`);
   }
 
   async updatePedido(id: string, changes: { nomeCliente: string; itens: ItemPedido[]; total: number; doacao?: number; valorPago?: number; pago?: boolean }): Promise<void> {
@@ -100,6 +115,7 @@ export class PedidosService {
       valorPago: (changes.valorPago != null && changes.valorPago > 0) ? changes.valorPago : deleteField(),
       ...(changes.pago != null ? { pago: changes.pago } : {}),
     });
+    this.log.registrar('pedido.alterado', `Pedido ID: ${id} — ${changes.nomeCliente} — R$ ${changes.total.toFixed(2)}`);
   }
 
   getPedidos(): Observable<Pedido[]> {

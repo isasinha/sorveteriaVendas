@@ -4,7 +4,8 @@ export type Funcionalidade =
   | 'doacoes.incluir'
   | 'itens.alterar'
   | 'perfil.controle'
-  | 'relatorios';
+  | 'relatorios'
+  | 'logs';
 
 export const FUNCIONALIDADES: { chave: Funcionalidade; label: string }[] = [
   { chave: 'pedidos.novo',      label: 'Novo Pedido' },
@@ -13,6 +14,7 @@ export const FUNCIONALIDADES: { chave: Funcionalidade; label: string }[] = [
   { chave: 'itens.alterar',     label: 'Configurações' },
   { chave: 'perfil.controle',   label: 'Controle de Perfil' },
   { chave: 'relatorios',        label: 'Relatórios' },
+  { chave: 'logs',              label: 'Logs' },
 ];
 
 export type FiltroConsultar = 'todos' | 'em-preparacao' | 'concluidos' | 'nao-pagos' | 'cancelados';

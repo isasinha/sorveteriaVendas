@@ -37,6 +37,7 @@ export class MenuComponent {
     { title: 'Configurações',              description: 'Gerenciar disponibilidade de produtos e outros itens', icon: 'inventory_2',   route: '/itens/alterar',    color: '#009688', chave: 'itens.alterar'     },
     { title: 'Controle de Perfil',       description: 'Gerenciar perfis de voluntários',                   icon: 'account_circle',    route: '/perfil/controle',  color: '#ff9800', chave: 'perfil.controle'   },
     { title: 'Relatórios',               description: 'Relatórios e estatísticas',                         icon: 'assessment',        route: '/relatorios',       color: '#2196f3', chave: 'relatorios'        },
+    { title: 'Logs',                     description: 'Histórico de ações: quem, quando, o quê',          icon: 'history',           route: '/logs',             color: '#546e7a', chave: 'logs'              },
   ];
 
   get itensFiltrados(): MenuItem[] {

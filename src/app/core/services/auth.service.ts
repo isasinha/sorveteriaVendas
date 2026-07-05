@@ -1,14 +1,16 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { auth, db } from '../config/firebase.config';
 import { signInWithEmailAndPassword, signOut, User, onAuthStateChanged } from 'firebase/auth';
 import { getDoc, doc, collection, query, where, getDocs } from 'firebase/firestore';
 import { BehaviorSubject, Observable, filter, firstValueFrom } from 'rxjs';
 import { PerfilCompleto, Funcionalidade, EscopoBarraca, FiltroConsultar, isTI, FUNCIONALIDADES } from '../models/perfil.model';
+import { LogService } from './log.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private log = inject(LogService);
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$: Observable<User | null> = this.currentUserSubject.asObservable();
 
@@ -31,13 +33,16 @@ export class AuthService {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       // onAuthStateChanged dispara em seguida e chama carregarPerfil automaticamente
+      this.log.registrar('auth.login', email);
     } catch (error: any) {
       throw this.handleAuthError(error);
     }
   }
 
   async logout(): Promise<void> {
+    const email = auth.currentUser?.email ?? 'desconhecido';
     await signOut(auth);
+    this.log.registrar('auth.logout', email);
     this.perfilSubject.next(undefined);
   }
 
