@@ -101,6 +101,75 @@
       </mat-card>
     </div>
 
+    <!-- Gráficos de linha do tempo -->
+    @if (dadosGrafico) {
+      <div class="graficos-grid">
+
+        <!-- Pedidos ao longo do tempo -->
+        <mat-card class="secao-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>show_chart</mat-icon>
+              Pedidos {{ dadosGrafico.granularidadeLabel }}
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="grafico-wrap">
+              <svg viewBox="0 0 800 200" width="100%" class="grafico-svg">
+                @for (yl of dadosGrafico.pedidos.yLabels; track $index) {
+                  <line class="grid-line" x1="55" [attr.y1]="yl.y" x2="785" [attr.y2]="yl.y" />
+                  <text class="y-label" x="50" [attr.y]="yl.y + 4">{{ yl.label }}</text>
+                }
+                <polygon [attr.points]="dadosGrafico.pedidos.area" class="area-azul" />
+                <polyline [attr.points]="dadosGrafico.pedidos.linha" class="linha-azul" />
+                @if (dadosGrafico.pedidos.comCirculos) {
+                  @for (c of dadosGrafico.pedidos.circles; track $index) {
+                    <circle [attr.cx]="c.cx" [attr.cy]="c.cy" r="3.5" class="dot-azul" />
+                  }
+                }
+                <line class="axis-line" x1="55" y1="155" x2="785" y2="155" />
+                @for (xl of dadosGrafico.xLabels; track $index) {
+                  <text class="x-label" [attr.x]="xl.x" y="172">{{ xl.label }}</text>
+                }
+              </svg>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Arrecadação ao longo do tempo -->
+        <mat-card class="secao-card">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>payments</mat-icon>
+              Arrecadação {{ dadosGrafico.granularidadeLabel }}
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="grafico-wrap">
+              <svg viewBox="0 0 800 200" width="100%" class="grafico-svg">
+                @for (yl of dadosGrafico.receita.yLabels; track $index) {
+                  <line class="grid-line" x1="55" [attr.y1]="yl.y" x2="785" [attr.y2]="yl.y" />
+                  <text class="y-label" x="50" [attr.y]="yl.y + 4">{{ yl.label }}</text>
+                }
+                <polygon [attr.points]="dadosGrafico.receita.area" class="area-verde" />
+                <polyline [attr.points]="dadosGrafico.receita.linha" class="linha-verde" />
+                @if (dadosGrafico.receita.comCirculos) {
+                  @for (c of dadosGrafico.receita.circles; track $index) {
+                    <circle [attr.cx]="c.cx" [attr.cy]="c.cy" r="3.5" class="dot-verde" />
+                  }
+                }
+                <line class="axis-line" x1="55" y1="155" x2="785" y2="155" />
+                @for (xl of dadosGrafico.xLabels; track $index) {
+                  <text class="x-label" [attr.x]="xl.x" y="172">{{ xl.label }}</text>
+                }
+              </svg>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+      </div>
+    }
+
     <!-- Status dos Pedidos -->
     <mat-card class="secao-card">
       <mat-card-header>

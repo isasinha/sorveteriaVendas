@@ -5,6 +5,10 @@
   padding: var(--spacing-2xl);
   max-width: 1400px;
   margin: 0 auto;
+
+  @include responsive(mobile) {
+    padding: var(--spacing-lg);
+  }
 }
 
 .page-header {
@@ -21,12 +25,25 @@
       color: var(--color-primary);
     }
   }
+
+  @include responsive(mobile) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+  }
 }
 
 .header-acoes {
   display: flex;
   gap: var(--spacing-md);
   align-items: center;
+
+  @include responsive(mobile) {
+    width: 100%;
+    flex-direction: column;
+
+    button { width: 100%; }
+  }
 }
 
 // ─── Filtros ──────────────────────────────────────────────────────────────────
@@ -44,6 +61,13 @@
   align-items: flex-end;
   flex-wrap: wrap;
   gap: var(--spacing-lg);
+
+  @include responsive(mobile) {
+    flex-direction: column;
+    align-items: stretch;
+
+    button { align-self: flex-start; }
+  }
 }
 
 .filtro-grupo {
@@ -91,6 +115,13 @@
     &:focus {
       border-color: var(--color-primary);
     }
+  }
+
+  @include responsive(mobile) {
+    flex-wrap: wrap;
+
+    input[type='date'] { flex: 1 1 120px; min-width: 0; }
+    input[type='time'] { flex: 0 0 90px; }
   }
 }
 
@@ -324,6 +355,91 @@
 
 .cor-cancelado  { color: #616161 !important; }
 .cor-nao-retirado { color: #c62828 !important; }
+
+// ─── Gráficos de linha do tempo ───────────────────────────────────────────────
+
+.graficos-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+
+  @include responsive(tablet) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.grafico-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.grafico-svg {
+  display: block;
+  overflow: visible;
+  min-width: 300px;
+
+  .grid-line {
+    stroke: #efefef;
+    stroke-width: 1;
+  }
+
+  .axis-line {
+    stroke: #d0d0d0;
+    stroke-width: 1.5;
+  }
+
+  .y-label {
+    font-size: 10px;
+    fill: #aaa;
+    text-anchor: end;
+    dominant-baseline: middle;
+  }
+
+  .x-label {
+    font-size: 9px;
+    fill: #aaa;
+    text-anchor: middle;
+  }
+
+  .area-azul {
+    fill: var(--color-primary);
+    opacity: 0.12;
+  }
+
+  .linha-azul {
+    fill: none;
+    stroke: var(--color-primary);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .dot-azul {
+    fill: var(--color-primary);
+    stroke: #fff;
+    stroke-width: 1.5;
+  }
+
+  .area-verde {
+    fill: var(--color-success);
+    opacity: 0.12;
+  }
+
+  .linha-verde {
+    fill: none;
+    stroke: var(--color-success);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .dot-verde {
+    fill: var(--color-success);
+    stroke: #fff;
+    stroke-width: 1.5;
+  }
+}
 
 // ─── Print-only (hidden on screen) ───────────────────────────────────
 

@@ -17,6 +17,12 @@ mat-dialog-content {
   max-width: 520px;
   max-height: 70vh;
   overflow-y: auto;
+
+  @media (max-width: 480px) {
+    min-width: unset;
+    width: 100%;
+    max-width: 100%;
+  }
 }
 
 .loading-state {

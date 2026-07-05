@@ -32,6 +32,12 @@ mat-dialog-content {
   padding-top: 8px !important;
   min-width: 460px;
   max-width: 540px;
+
+  @media (max-width: 500px) {
+    min-width: unset;
+    width: 100%;
+    max-width: 100%;
+  }
 }
 
 .loading-state {

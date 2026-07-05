@@ -5,6 +5,10 @@
   padding: var(--spacing-2xl);
   max-width: 1400px;
   margin: 0 auto;
+
+  @include responsive(mobile) {
+    padding: var(--spacing-lg);
+  }
 }
 
 .page-header {
@@ -19,6 +23,14 @@
     color: var(--color-text);
 
     mat-icon { color: var(--color-primary); }
+  }
+
+  @include responsive(mobile) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+
+    h1 { font-size: var(--font-size-lg); }
   }
 }
 
